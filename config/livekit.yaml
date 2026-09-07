@@ -3,7 +3,7 @@
 #
 # API keys are NOT stored here. Set LIVEKIT_API_KEY / LIVEKIT_API_SECRET in .env;
 # docker-compose passes them through the LIVEKIT_KEYS environment variable.
-# The same key/secret must be configured in xue-hua-chat config/chat-api-chat.yml (liveKit.*).
+# The same key/secret must be configured in xue-hua-chat config/livekit.yml.
 port: 7880
 bind_addresses:
   - ""
@@ -18,7 +18,7 @@ rtc:
 redis:
   address: redis:6379
   username: ""
-  password: "Matkurban520%"
+  password: "Matkurban520"
   # 0 = IM server, 1 = chat, 2 = livekit
   db: 2
 turn:
@@ -35,8 +35,8 @@ webhook:
   # Must be one of the keys given in LIVEKIT_KEYS.
   api_key: API3ZsVxGX7h7Jr
   urls:
-    # chat-api-chat runs on the docker host (mage start), port 10008.
-    - https://jsontodart.cn/chat/meeting/livekit_webhook
-    - https://jsontodart.cn/chat/meeting/conference/livekit_webhook
+    # chat-api-chat behind chat.jsontodart.cn (port 10008).
+    - https://chat.jsontodart.cn/meeting/livekit_webhook
+    - https://chat.jsontodart.cn/conference/livekit_webhook
 logging:
   level: info

@@ -69,9 +69,10 @@ LiveKit shares the `redis` container (`redis:6379`, db `2`; the IM server uses d
 chat uses db `1`). Its configuration lives in `config/livekit.yaml`,
 `config/livekit-egress.yaml`, `config/livekit-ingress.yaml` and `config/caddy.yaml`.
 The API key/secret is supplied through `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` in
-`.env` and must equal `liveKit.key` / `liveKit.secret` in chat's `config/chat-api-chat.yml`.
-Webhooks point at `host.docker.internal:10008`, i.e. `chat-api-chat` started with
-`mage start` on the same host. For TLS, set your domains in `config/caddy.yaml`,
+`.env` and must equal `key` / `secret` in chat's `config/livekit.yml`.
+Webhooks in `config/livekit.yaml` are `https://jsontodart.cn/chat/meeting/livekit_webhook`
+and `https://jsontodart.cn/chat/conference/livekit_webhook` (the `/chat` prefix is
+stripped by reverse proxy onto `chat-api-chat` on port `10008`). For TLS, set your domains in `config/caddy.yaml`,
 run `deployments/livekit/update_caddy_ip.sh`, and enable `turn` in `config/livekit.yaml`.
 Multi-node compose and Kubernetes manifests are under `deployments/livekit/`.
 

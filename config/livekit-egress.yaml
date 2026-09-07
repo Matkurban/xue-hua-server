@@ -2,7 +2,7 @@
 ws_url: ws://livekit:7880
 redis:
   address: redis:6379
-  password: Matkurban520%
+  password: Matkurban520
   db: 2
 insecure: true
 file_output:

@@ -1,7 +1,7 @@
 # External Redis service configuration
 address: [localhost:16379]
 username:
-password: Matkurban520%
+password: Matkurban520
 # redis Mode, including "standalone","cluster","sentinel"
 redisMode: "standalone"
 db: 0

@@ -8,7 +8,7 @@ database: server_v3
 # Username for database authentication
 username: server
 # Password for database authentication
-password: Matkurban520%
+password: Matkurban520
 # Authentication source for database authentication, if use root user, set it to admin
 authSource: server_v3
 # Maximum number of connections in the connection pool

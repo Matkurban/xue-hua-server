@@ -2,7 +2,7 @@
 ws_url: ws://livekit:7880
 redis:
   address: redis:6379
-  password: Matkurban520%
+  password: Matkurban520
   db: 2
 rtmp_port: 1935
 whip_port: 8085

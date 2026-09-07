@@ -23,6 +23,7 @@ mage pack
 # 在 Linux/amd64 部署主机完成基础设施配置后：
 cd server-release
 ./mage start
+nohup ./mage start >> _output/logs/server.log 2>&1 &
 ./mage check
 ./mage stop
 ```

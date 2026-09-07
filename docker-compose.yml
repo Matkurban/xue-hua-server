@@ -17,20 +17,24 @@ services:
         sleep 1
       done &&
       mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "
-      db = db.getSiblingDB(\"$$MONGO_INITDB_DATABASE\");
-      if (!db.getUser(\"$$MONGO_SERVER_USERNAME\")) {
-        db.createUser({
-          user: \"$$MONGO_SERVER_USERNAME\",
-          pwd: \"$$MONGO_SERVER_PASSWORD\",
-          roles: [{role: \"readWrite\", db: \"$$MONGO_INITDB_DATABASE\"}]
-        });
-        print(\"User created successfully: \");
-        print(\"Username: $$MONGO_SERVER_USERNAME\");
-        print(\"Password: $$MONGO_SERVER_PASSWORD\");
-        print(\"Database: $$MONGO_INITDB_DATABASE\");
-      } else {
-        print(\"User already exists in database: $$MONGO_INITDB_DATABASE, Username: $$MONGO_SERVER_USERNAME\");
+      function ensureUser(dbName) {
+        var d = db.getSiblingDB(dbName);
+        if (!d.getUser(\"$$MONGO_SERVER_USERNAME\")) {
+          d.createUser({
+            user: \"$$MONGO_SERVER_USERNAME\",
+            pwd: \"$$MONGO_SERVER_PASSWORD\",
+            roles: [{role: \"readWrite\", db: dbName}]
+          });
+          print(\"User created successfully: \");
+          print(\"Username: $$MONGO_SERVER_USERNAME\");
+          print(\"Password: $$MONGO_SERVER_PASSWORD\");
+          print(\"Database: \" + dbName);
+        } else {
+          print(\"User already exists in database: \" + dbName + \", Username: $$MONGO_SERVER_USERNAME\");
+        }
       }
+      ensureUser(\"$$MONGO_INITDB_DATABASE\");
+      ensureUser(\"$$MONGO_CHAT_DATABASE\");
       " &&
       tail -f /dev/null
       '
@@ -45,8 +49,9 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=openIM123
       - MONGO_INITDB_DATABASE=server_v3
+      - MONGO_CHAT_DATABASE=chat_v3
       - MONGO_SERVER_USERNAME=server
-      - MONGO_SERVER_PASSWORD=openIM123
+      - MONGO_SERVER_PASSWORD=Matkurban520
     restart: always
     networks:
       - server
@@ -67,7 +72,7 @@ services:
       net.core.somaxconn: 1024
     command: >
       redis-server
-      --requirepass openIM123
+      --requirepass Matkurban520
       --appendonly yes
       --aof-use-rdb-preamble yes
       --save ""
@@ -213,7 +218,7 @@ services:
     environment:
       TZ: Asia/Shanghai
       MINIO_ROOT_USER: root
-      MINIO_ROOT_PASSWORD: openIM123
+      MINIO_ROOT_PASSWORD: Matkurban520
     restart: always
     command: minio server /data --console-address ':9090'
     networks:
