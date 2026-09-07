@@ -1,0 +1,59 @@
+# LiveKit SFU N=2 + Egress + Ingress (Redis-coordinated).
+# Usage: docker compose -f docker-compose.cluster.n2.yml up -d
+# Client liveURL: ws://<host>:7880 or ws://<host>:7980 (or put LB in front).
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  livekit-a:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml --node-ip livekit-a
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50050:50000-50050/udp"
+    depends_on:
+      - redis
+
+  livekit-b:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml --node-ip livekit-b
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7980:7880"
+      - "7981:7881"
+      - "50100-50150:50100-50150/udp"
+    depends_on:
+      - redis
+
+  livekit-egress:
+    image: livekit/egress:latest
+    environment:
+      - EGRESS_CONFIG_FILE=/etc/egress.yaml
+    volumes:
+      - ./egress.n2.yaml:/etc/egress.yaml:ro
+      - egress-data:/out
+    depends_on:
+      - livekit-a
+      - redis
+
+  livekit-ingress:
+    image: livekit/ingress:latest
+    environment:
+      - INGRESS_CONFIG_FILE=/etc/ingress.yaml
+    volumes:
+      - ./ingress.n2.yaml:/etc/ingress.yaml:ro
+    ports:
+      - "1935:1935"
+      - "8085:8085"
+    depends_on:
+      - livekit-a
+      - redis
+
+volumes:
+  egress-data:

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo-statefulset
+spec:
+  serviceName: "mongo-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7.0
+          command: ["/bin/bash", "-ec"]
+          args:
+            - |
+              docker-entrypoint.sh mongod --wiredTigerCacheSizeGB "$wiredTigerCacheSizeGB" --auth &
+              mongo_pid=$!
+              trap 'kill "$mongo_pid"; wait "$mongo_pid"' TERM INT EXIT
+              ready=false
+              for attempt in {1..120}; do
+                kill -0 "$mongo_pid"
+                if mongosh --quiet -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" \
+                    --authenticationDatabase admin --eval 'db.runCommand({ping: 1})' >/dev/null 2>&1; then
+                  ready=true
+                  break
+                fi
+                sleep 1
+              done
+              "$ready" || { echo "MongoDB startup timed out" >&2; exit 1; }
+              mongosh --quiet -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" \
+                --authenticationDatabase admin --eval '
+                  const target = db.getSiblingDB(process.env.MONGO_INITDB_DATABASE);
+                  if (!target.getUser(process.env.MONGO_SERVER_USERNAME)) {
+                    target.createUser({
+                      user: process.env.MONGO_SERVER_USERNAME,
+                      pwd: process.env.MONGO_SERVER_PASSWORD,
+                      roles: [{role: "readWrite", db: process.env.MONGO_INITDB_DATABASE}]
+                    });
+                  }
+                '
+              wait "$mongo_pid"
+              trap - TERM INT EXIT
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: server-mongo-init-secret
+                  key: mongo_initdb_root_username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: server-mongo-init-secret
+                  key: mongo_initdb_root_password
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: server-mongo-init-secret
+                  key: mongo_initdb_database
+            - name: MONGO_SERVER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: server-mongo-secret
+                  key: mongo_server_username
+            - name: MONGO_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: server-mongo-secret
+                  key: mongo_server_password
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: wiredTigerCacheSizeGB
+              value: "1"
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: /data/db
+
+      volumes:
+        - name: mongo-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: server-mongo-init-secret
+type: Opaque
+data:
+  mongo_initdb_root_username: cm9vdA== # base64 for "root"
+  mongo_initdb_root_password: b3BlbklNMTIz # base64 for "openIM123"
+  mongo_initdb_database: c2VydmVyX3Yz # base64 for "server_v3"
+  mongo_server_username: b3BlbklN # Existing credential retained; application uses server-mongo-secret.
+  mongo_server_password: b3BlbklNMTIz

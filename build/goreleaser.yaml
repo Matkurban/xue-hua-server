@@ -1,0 +1,86 @@
+version: 2
+project_name: server
+dist: ./_output/dist
+
+before:
+  hooks:
+    - go generate ./...
+
+builds:
+  - &service
+    id: server-api
+    binary: server-api
+    main: ./cmd/server-api
+    env: [CGO_ENABLED=0]
+    goos: [darwin, windows, linux]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X server/v3/version.Version={{ .Version }}
+  - <<: *service
+    id: server-cmdutils
+    binary: server-cmdutils
+    main: ./cmd/server-cmdutils
+  - <<: *service
+    id: server-crontask
+    binary: server-crontask
+    main: ./cmd/server-crontask
+  - <<: *service
+    id: server-msggateway
+    binary: server-msggateway
+    main: ./cmd/server-msggateway
+  - <<: *service
+    id: server-msgtransfer
+    binary: server-msgtransfer
+    main: ./cmd/server-msgtransfer
+  - <<: *service
+    id: server-push
+    binary: server-push
+    main: ./cmd/server-push
+  - <<: *service
+    id: server-rpc-auth
+    binary: server-rpc-auth
+    main: ./cmd/server-rpc/server-rpc-auth
+  - <<: *service
+    id: server-rpc-conversation
+    binary: server-rpc-conversation
+    main: ./cmd/server-rpc/server-rpc-conversation
+  - <<: *service
+    id: server-rpc-friend
+    binary: server-rpc-friend
+    main: ./cmd/server-rpc/server-rpc-friend
+  - <<: *service
+    id: server-rpc-group
+    binary: server-rpc-group
+    main: ./cmd/server-rpc/server-rpc-group
+  - <<: *service
+    id: server-rpc-msg
+    binary: server-rpc-msg
+    main: ./cmd/server-rpc/server-rpc-msg
+  - <<: *service
+    id: server-rpc-third
+    binary: server-rpc-third
+    main: ./cmd/server-rpc/server-rpc-third
+  - <<: *service
+    id: server-rpc-user
+    binary: server-rpc-user
+    main: ./cmd/server-rpc/server-rpc-user
+
+archives:
+  - formats: [tar.gz]
+    name_template: "server-{{ .Os }}-{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - config/**
+      - LICENSE
+      - README.md
+      - README_zh_CN.md
+
+checksum:
+  name_template: server-checksums.txt
+  algorithm: sha256
+
+release:
+  disable: true

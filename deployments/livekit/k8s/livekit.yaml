@@ -1,0 +1,178 @@
+# Minimal LiveKit SFU Deployment — scale replicas for N>=2 (Redis-backed).
+# Apply: kubectl apply -f xue-hua-server/deployments/livekit/k8s/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: livekit-config
+data:
+  livekit.yaml: |
+    port: 7880
+    rtc:
+      tcp_port: 7881
+      port_range_start: 50000
+      port_range_end: 50100
+      use_external_ip: true
+    redis:
+      address: redis:6379
+    keys:
+      APIGPW3gnFTzqHH: CHANGE_ME_LIVEKIT_SECRET
+    webhook:
+      api_key: APIGPW3gnFTzqHH
+      urls:
+        - http://chat-api-chat:10008/meeting/livekit_webhook
+        - http://chat-api-chat:10008/conference/livekit_webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livekit
+  template:
+    metadata:
+      labels:
+        app: livekit
+    spec:
+      containers:
+        - name: livekit
+          image: livekit/livekit-server:latest
+          args: ["--config", "/etc/livekit.yaml"]
+          ports:
+            - containerPort: 7880
+              name: http
+            - containerPort: 7881
+              name: rtc-tcp
+          volumeMounts:
+            - name: config
+              mountPath: /etc/livekit.yaml
+              subPath: livekit.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: livekit-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livekit
+spec:
+  type: LoadBalancer
+  selector:
+    app: livekit
+  ports:
+    - name: http
+      port: 7880
+      targetPort: 7880
+    - name: rtc-tcp
+      port: 7881
+      targetPort: 7881
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit-egress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livekit-egress
+  template:
+    metadata:
+      labels:
+        app: livekit-egress
+    spec:
+      containers:
+        - name: egress
+          image: livekit/egress:latest
+          env:
+            - name: EGRESS_CONFIG_FILE
+              value: /etc/egress.yaml
+          volumeMounts:
+            - name: config
+              mountPath: /etc/egress.yaml
+              subPath: egress.yaml
+            - name: out
+              mountPath: /out
+      volumes:
+        - name: config
+          configMap:
+            name: livekit-sidecar-config
+        - name: out
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit-ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livekit-ingress
+  template:
+    metadata:
+      labels:
+        app: livekit-ingress
+    spec:
+      containers:
+        - name: ingress
+          image: livekit/ingress:latest
+          env:
+            - name: INGRESS_CONFIG_FILE
+              value: /etc/ingress.yaml
+          ports:
+            - containerPort: 1935
+              name: rtmp
+            - containerPort: 8085
+              name: whip
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ingress.yaml
+              subPath: ingress.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: livekit-sidecar-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livekit-ingress
+spec:
+  type: LoadBalancer
+  selector:
+    app: livekit-ingress
+  ports:
+    - name: rtmp
+      port: 1935
+      targetPort: 1935
+    - name: whip
+      port: 8085
+      targetPort: 8085
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: livekit-sidecar-config
+data:
+  egress.yaml: |
+    api_key: APIGPW3gnFTzqHH
+    api_secret: CHANGE_ME_LIVEKIT_SECRET
+    ws_url: ws://livekit:7880
+    redis:
+      address: redis:6379
+      db: 1
+    insecure: true
+  ingress.yaml: |
+    api_key: APIGPW3gnFTzqHH
+    api_secret: CHANGE_ME_LIVEKIT_SECRET
+    ws_url: ws://livekit:7880
+    redis:
+      address: redis:6379
+      db: 1
+    rtmp_port: 1935
+    whip_port: 8085
+    http_relay_port: 9090

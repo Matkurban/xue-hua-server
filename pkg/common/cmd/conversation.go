@@ -1,0 +1,61 @@
+package cmd
+
+import (
+	"context"
+
+	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"github.com/spf13/cobra"
+	"server/v3/internal/rpc/conversation"
+	"server/v3/pkg/common/config"
+	"server/v3/pkg/common/startrpc"
+	"server/v3/version"
+)
+
+type ConversationRpcCmd struct {
+	*RootCmd
+	ctx                context.Context
+	configMap          map[string]any
+	conversationConfig *conversation.Config
+}
+
+func NewConversationRpcCmd() *ConversationRpcCmd {
+	var conversationConfig conversation.Config
+	ret := &ConversationRpcCmd{conversationConfig: &conversationConfig}
+	ret.configMap = map[string]any{
+		config.ServerRPCConversationCfgFileName: &conversationConfig.RpcConfig,
+		config.RedisConfigFileName:              &conversationConfig.RedisConfig,
+		config.MongodbConfigFileName:            &conversationConfig.MongodbConfig,
+		config.ShareFileName:                    &conversationConfig.Share,
+		config.NotificationFileName:             &conversationConfig.NotificationConfig,
+		config.WebhooksConfigFileName:           &conversationConfig.WebhooksConfig,
+		config.LocalCacheConfigFileName:         &conversationConfig.LocalCacheConfig,
+		config.DiscoveryConfigFilename:          &conversationConfig.Discovery,
+	}
+	ret.RootCmd = NewRootCmd(program.GetProcessName(), WithConfigMap(ret.configMap))
+	ret.ctx = context.WithValue(context.Background(), "version", version.Version)
+	ret.Command.RunE = func(cmd *cobra.Command, args []string) error {
+		return ret.runE()
+	}
+	return ret
+}
+
+func (a *ConversationRpcCmd) Exec() error {
+	return a.Execute()
+}
+
+func (a *ConversationRpcCmd) runE() error {
+	return startrpc.Start(a.ctx, &a.conversationConfig.Discovery, &a.conversationConfig.RpcConfig.CircuitBreaker, &a.conversationConfig.RpcConfig.RateLimiter, &a.conversationConfig.RpcConfig.Prometheus, a.conversationConfig.RpcConfig.RPC.ListenIP,
+		a.conversationConfig.RpcConfig.RPC.RegisterIP, a.conversationConfig.RpcConfig.RPC.AutoSetPorts, a.conversationConfig.RpcConfig.RPC.Ports,
+		a.Index(), a.conversationConfig.Discovery.RpcService.Conversation, &a.conversationConfig.NotificationConfig, a.conversationConfig,
+		[]string{
+			a.conversationConfig.RpcConfig.GetConfigFileName(),
+			a.conversationConfig.RedisConfig.GetConfigFileName(),
+			a.conversationConfig.MongodbConfig.GetConfigFileName(),
+			a.conversationConfig.NotificationConfig.GetConfigFileName(),
+			a.conversationConfig.Share.GetConfigFileName(),
+			a.conversationConfig.LocalCacheConfig.GetConfigFileName(),
+			a.conversationConfig.WebhooksConfig.GetConfigFileName(),
+			a.conversationConfig.Discovery.GetConfigFileName(),
+		}, nil,
+		conversation.Start)
+}

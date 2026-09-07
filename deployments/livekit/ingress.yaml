@@ -1,0 +1,9 @@
+api_key: APIGPW3gnFTzqHH
+api_secret: CHANGE_ME_LIVEKIT_SECRET
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  db: 1
+rtmp_port: 1935
+whip_port: 8085
+http_relay_port: 9090

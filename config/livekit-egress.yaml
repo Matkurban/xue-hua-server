@@ -1,0 +1,10 @@
+# LiveKit Egress (compose profile "livekit-extras"). Keys come from LIVEKIT_API_KEY/SECRET env.
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  password: Matkurban520%
+  db: 2
+insecure: true
+file_output:
+  local: true
+  # outputs written under /out (compose volume egress-data)

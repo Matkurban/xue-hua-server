@@ -1,0 +1,9 @@
+# LiveKit Ingress (compose profile "livekit-extras"). Keys come from LIVEKIT_API_KEY/SECRET env.
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  password: Matkurban520%
+  db: 2
+rtmp_port: 1935
+whip_port: 8085
+http_relay_port: 9090

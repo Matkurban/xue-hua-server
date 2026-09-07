@@ -1,0 +1,28 @@
+# Cluster-ready LiveKit config. replicas=1 is valid; scale by adding nodes
+# that share the same redis + keys and advertise unique node IPs.
+port: 7880
+rtc:
+    tcp_port: 7881
+    port_range_start: 50000
+    port_range_end: 60000
+    use_external_ip: false
+    enable_loopback_candidate: false
+    # For multi-node: set use_external_ip: true and ensure each node has a routable IP.
+keys:
+    APIGPW3gnFTzqHH: CHANGE_ME_LIVEKIT_SECRET
+# Required for multi-node room coordination (also fine for N=1).
+redis:
+    address: redis:6379
+    # username: ""
+    # password: ""
+    db: 1
+room:
+    empty_timeout: 300
+    max_participants: 500
+webhook:
+    api_key: APIGPW3gnFTzqHH
+    urls:
+        - http://chat-api-chat:10008/meeting/livekit_webhook
+        - http://chat-api-chat:10008/conference/livekit_webhook
+logging:
+    level: info

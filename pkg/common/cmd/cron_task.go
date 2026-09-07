@@ -1,0 +1,58 @@
+package cmd
+
+import (
+	"context"
+
+	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"github.com/spf13/cobra"
+	"server/v3/internal/tools/cron"
+	"server/v3/pkg/common/config"
+	"server/v3/pkg/common/startrpc"
+	"server/v3/version"
+)
+
+type CronTaskCmd struct {
+	*RootCmd
+	ctx            context.Context
+	configMap      map[string]any
+	cronTaskConfig *cron.Config
+}
+
+func NewCronTaskCmd() *CronTaskCmd {
+	var cronTaskConfig cron.Config
+	ret := &CronTaskCmd{cronTaskConfig: &cronTaskConfig}
+	ret.configMap = map[string]any{
+		config.ServerCronTaskCfgFileName: &cronTaskConfig.CronTask,
+		config.ShareFileName:             &cronTaskConfig.Share,
+		config.DiscoveryConfigFilename:   &cronTaskConfig.Discovery,
+	}
+	ret.RootCmd = NewRootCmd(program.GetProcessName(), WithConfigMap(ret.configMap))
+	ret.ctx = context.WithValue(context.Background(), "version", version.Version)
+	ret.Command.RunE = func(cmd *cobra.Command, args []string) error {
+		return ret.runE()
+	}
+	return ret
+}
+
+func (a *CronTaskCmd) Exec() error {
+	return a.Execute()
+}
+
+func (a *CronTaskCmd) runE() error {
+	var prometheus config.Prometheus
+	return startrpc.Start(
+		a.ctx, &a.cronTaskConfig.Discovery,
+		nil,
+		nil,
+		&prometheus,
+		"", "",
+		true,
+		nil, 0,
+		"",
+		nil,
+		a.cronTaskConfig,
+		[]string{},
+		[]string{},
+		cron.Start,
+	)
+}

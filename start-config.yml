@@ -1,0 +1,18 @@
+services:
+  server-api: 1
+  server-crontask: 4
+  server-rpc-user: 1
+  server-msggateway: 1
+  server-push: 8
+  server-msgtransfer: 8
+  server-rpc-conversation: 1
+  server-rpc-auth: 1
+  server-rpc-group: 1
+  server-rpc-friend: 1
+  server-rpc-msg: 1
+  server-rpc-third: 1
+tools:
+  - check-free-memory
+  - check-component
+  - seq
+maxFileDescriptors: 10000

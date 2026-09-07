@@ -1,0 +1,16 @@
+# Name of the bucket in MinIO
+bucket: server
+# Access key ID for MinIO authentication
+# External MinIO service configuration
+accessKeyID: root
+# Secret access key for MinIO authentication
+secretAccessKey: Matkurban520%
+# Session token for MinIO authentication (optional)
+sessionToken:
+# Internal address of the MinIO server (API port)
+internalAddress: localhost:10005
+# External address of the MinIO server, accessible from outside. Supports both HTTP and HTTPS using a domain name
+# externalAddress: https://jsontodart.cn/im-minio-api
+externalAddress: https://jsontodart.cn/im-minio-api
+# Flag to enable or disable public read access to the bucket
+publicRead: false

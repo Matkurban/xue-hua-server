@@ -1,0 +1,303 @@
+networks:
+  server:
+    driver: bridge
+
+services:
+  # MongoDB container is commented out - using external MongoDB service
+  mongodb:
+    image: "${MONGO_IMAGE}"
+    ports:
+      - "37017:27017"
+    container_name: mongo
+    command: >
+      bash -c '
+      docker-entrypoint.sh mongod --wiredTigerCacheSizeGB $$wiredTigerCacheSizeGB --auth &
+      until mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "db.runCommand({ ping: 1 })" &>/dev/null; do
+        echo "Waiting for MongoDB to start..."
+        sleep 1
+      done &&
+      mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "
+      db = db.getSiblingDB(\"$$MONGO_INITDB_DATABASE\");
+      if (!db.getUser(\"$$MONGO_SERVER_USERNAME\")) {
+        db.createUser({
+          user: \"$$MONGO_SERVER_USERNAME\",
+          pwd: \"$$MONGO_SERVER_PASSWORD\",
+          roles: [{role: \"readWrite\", db: \"$$MONGO_INITDB_DATABASE\"}]
+        });
+        print(\"User created successfully: \");
+        print(\"Username: $$MONGO_SERVER_USERNAME\");
+        print(\"Password: $$MONGO_SERVER_PASSWORD\");
+        print(\"Database: $$MONGO_INITDB_DATABASE\");
+      } else {
+        print(\"User already exists in database: $$MONGO_INITDB_DATABASE, Username: $$MONGO_SERVER_USERNAME\");
+      }
+      " &&
+      tail -f /dev/null
+      '
+    volumes:
+      - "${DATA_DIR}/components/mongodb/data/db:/data/db"
+      - "${DATA_DIR}/components/mongodb/data/logs:/data/logs"
+      - "${DATA_DIR}/components/mongodb/data/conf:/etc/mongo"
+      - "${MONGO_BACKUP_DIR}:/data/backup"
+    environment:
+      - TZ=Asia/Shanghai
+      - wiredTigerCacheSizeGB=0.5
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=openIM123
+      - MONGO_INITDB_DATABASE=server_v3
+      - MONGO_SERVER_USERNAME=server
+      - MONGO_SERVER_PASSWORD=openIM123
+    restart: always
+    networks:
+      - server
+
+  # Redis container is commented out - using external Redis service
+  redis:
+    image: "${REDIS_IMAGE}"
+    container_name: redis
+    ports:
+      - "16379:6379"
+    volumes:
+      - "${DATA_DIR}/components/redis/data:/data"
+      - "${DATA_DIR}/components/redis/config/redis.conf:/usr/local/redis/config/redis.conf"
+    environment:
+      TZ: Asia/Shanghai
+    restart: always
+    sysctls:
+      net.core.somaxconn: 1024
+    command: >
+      redis-server
+      --requirepass openIM123
+      --appendonly yes
+      --aof-use-rdb-preamble yes
+      --save ""
+    networks:
+      - server
+
+  etcd:
+    image: "${ETCD_IMAGE}"
+    container_name: etcd
+    ports:
+      - "12379:2379"
+      - "12380:2380"
+    environment:
+      - ETCD_NAME=s1
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_CLUSTER=s1=http://0.0.0.0:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=tkn
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ALLOW_NONE_AUTHENTICATION=no
+
+      ## Optional: Enable etcd authentication by setting the following credentials
+      # - ETCD_ROOT_USER=root
+      # - ETCD_ROOT_PASSWORD=openIM123
+      # - ETCD_USERNAME=server
+      # - ETCD_PASSWORD=openIM123
+    volumes:
+      - "${DATA_DIR}/components/etcd:/etcd-data"
+    command: >
+      /bin/sh -c '
+        etcd &
+        export ETCDCTL_API=3
+        echo "Waiting for etcd to become healthy..."
+        until etcdctl --endpoints=http://127.0.0.1:2379 endpoint health &>/dev/null; do
+          echo "Waiting for ETCD to start..."
+          sleep 1
+        done
+
+        echo "etcd is healthy."
+
+        if [ -n "$${ETCD_ROOT_USER}" ] && [ -n "$${ETCD_ROOT_PASSWORD}" ] && [ -n "$${ETCD_USERNAME}" ] && [ -n "$${ETCD_PASSWORD}" ]; then
+          echo "Authentication credentials provided. Setting up authentication..."
+
+        echo "Checking authentication status..."
+        if ! etcdctl --endpoints=http://127.0.0.1:2379 auth status | grep -q "Authentication Status: true"; then
+          echo "Authentication is disabled. Creating users and enabling..."
+          
+          # Create users and setup permissions
+          etcdctl --endpoints=http://127.0.0.1:2379 user add $${ETCD_ROOT_USER} --new-user-password=$${ETCD_ROOT_PASSWORD} || true
+          etcdctl --endpoints=http://127.0.0.1:2379 user add $${ETCD_USERNAME} --new-user-password=$${ETCD_PASSWORD} || true
+          
+          etcdctl --endpoints=http://127.0.0.1:2379 role add server-role || true
+          etcdctl --endpoints=http://127.0.0.1:2379 role grant-permission server-role --prefix=true readwrite / || true
+          etcdctl --endpoints=http://127.0.0.1:2379 role grant-permission server-role --prefix=true readwrite "" || true
+          etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_USERNAME} server-role || true
+          
+          etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_ROOT_USER} $${ETCD_USERNAME} root || true
+          
+          echo "Enabling authentication..."
+          etcdctl --endpoints=http://127.0.0.1:2379 auth enable
+          echo "Authentication enabled successfully"
+        else
+          echo "Authentication is already enabled. Checking Server user..."
+          
+          # Check if server user exists and can perform operations
+          if ! etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_USERNAME}:$${ETCD_PASSWORD} put /test/auth "auth-check" &>/dev/null; then
+            echo "Server user test failed. Recreating user with root credentials..."
+            
+            # Try to create/update the server user using root credentials
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} user add $${ETCD_USERNAME} --new-user-password=$${ETCD_PASSWORD} --no-password-file || true
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} role add server-role || true
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} role grant-permission server-role --prefix=true readwrite / || true
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} role grant-permission server-role --prefix=true readwrite "" || true
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} user grant-role $${ETCD_USERNAME} server-role || true
+            etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_ROOT_USER} $${ETCD_USERNAME} root || true
+            
+            echo "Server user recreated with required permissions"
+          else
+            echo "Server user exists and has correct permissions"
+            etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_USERNAME}:$${ETCD_PASSWORD} del /test/auth &>/dev/null
+          fi
+        fi
+        echo "Testing authentication with Server user..."
+        if etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_USERNAME}:$${ETCD_PASSWORD} put /test/auth "auth-works"; then
+          echo "Authentication working properly"
+          etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_USERNAME}:$${ETCD_PASSWORD} del /test/auth
+        else
+          echo "WARNING: Authentication test failed"
+          fi
+        else
+          echo "No authentication credentials provided. Running in no-auth mode."
+          echo "To enable authentication, set ETCD_ROOT_USER, ETCD_ROOT_PASSWORD, ETCD_USERNAME, and ETCD_PASSWORD environment variables."
+        fi
+        
+        tail -f /dev/null
+      '
+    restart: always
+    networks:
+      - server
+
+  # Kafka container is commented out - using external Kafka service
+  kafka:
+    image: "${KAFKA_IMAGE}"
+    container_name: kafka
+    restart: always
+    ports:
+      - "19094:9094"
+    volumes:
+      - "${DATA_DIR}/components/kafka:/tmp/kraft-combined-logs"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:19094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_HEAP_OPTS: '-Xmx512m -Xms256m'
+      CLUSTER_ID: 'server-kafka-cluster-id-01'
+    networks:
+      - server
+
+  # MinIO container is commented out - using external MinIO service
+  minio:
+    image: "${MINIO_IMAGE}"
+    ports:
+      - "10005:9000"
+      - "19090:9090"
+    container_name: minio
+    volumes:
+      - "${DATA_DIR}/components/mnt/data:/data"
+      - "${DATA_DIR}/components/mnt/config:/root/.minio"
+    environment:
+      TZ: Asia/Shanghai
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: openIM123
+    restart: always
+    command: minio server /data --console-address ':9090'
+    networks:
+      - server
+
+  # LiveKit SFU for calls/meetings (used by xue-hua-chat). Shares the redis container above.
+  # RTC media uses UDP 50000-50100; widen the range (also in config/livekit.yaml) for large rooms,
+  # or switch this service to network_mode: host on Linux for best media performance.
+  livekit:
+    image: "${LIVEKIT_IMAGE}"
+    container_name: livekit
+    command: --config /etc/livekit.yaml
+    environment:
+      TZ: Asia/Shanghai
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./config/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "50000-50100:50000-50100/udp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - server
+
+  # Optional TLS front for LiveKit signalling + TURN (docker compose --profile caddy up -d).
+  # Edit domains in config/caddy.yaml and run deployments/livekit/update_caddy_ip.sh first.
+  caddy:
+    image: "${CADDY_IMAGE}"
+    container_name: caddy
+    command: run --config /etc/caddy.yaml --adapter yaml
+    profiles:
+      - caddy
+    network_mode: host
+    volumes:
+      - ./config/caddy.yaml:/etc/caddy.yaml:ro
+      - "${DATA_DIR}/components/caddy/data:/data"
+    restart: always
+
+  # Optional recording / RTMP-WHIP ingest (docker compose --profile livekit-extras up -d).
+  livekit-egress:
+    image: "${LIVEKIT_EGRESS_IMAGE}"
+    container_name: livekit-egress
+    profiles:
+      - livekit-extras
+    environment:
+      TZ: Asia/Shanghai
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+      EGRESS_API_KEY: "${LIVEKIT_API_KEY}"
+      EGRESS_API_SECRET: "${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./config/livekit-egress.yaml:/etc/egress.yaml:ro
+      - "${DATA_DIR}/components/livekit/egress:/out"
+    depends_on:
+      - livekit
+      - redis
+    restart: always
+    networks:
+      - server
+
+  livekit-ingress:
+    image: "${LIVEKIT_INGRESS_IMAGE}"
+    container_name: livekit-ingress
+    profiles:
+      - livekit-extras
+    environment:
+      TZ: Asia/Shanghai
+      INGRESS_CONFIG_FILE: /etc/ingress.yaml
+      INGRESS_API_KEY: "${LIVEKIT_API_KEY}"
+      INGRESS_API_SECRET: "${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./config/livekit-ingress.yaml:/etc/ingress.yaml:ro
+    ports:
+      - "1935:1935"
+      - "8085:8085"
+    depends_on:
+      - livekit
+      - redis
+    restart: always
+    networks:
+      - server

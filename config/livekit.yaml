@@ -1,0 +1,42 @@
+# LiveKit SFU configuration (started by docker-compose.yml service "livekit").
+# Shares the "redis" container with the IM server: same host/password, separate db.
+#
+# API keys are NOT stored here. Set LIVEKIT_API_KEY / LIVEKIT_API_SECRET in .env;
+# docker-compose passes them through the LIVEKIT_KEYS environment variable.
+# The same key/secret must be configured in xue-hua-chat config/chat-api-chat.yml (liveKit.*).
+port: 7880
+bind_addresses:
+  - ""
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50100
+  # true when clients connect from outside this host (production). The public IP
+  # is auto-detected; override with LIVEKIT_NODE_IP if detection is wrong.
+  use_external_ip: true
+  enable_loopback_candidate: false
+redis:
+  address: redis:6379
+  username: ""
+  password: "Matkurban520%"
+  # 0 = IM server, 1 = chat, 2 = livekit
+  db: 2
+turn:
+  # Enable together with the "caddy" compose profile for TLS TURN on 443/5349.
+  enabled: false
+  domain: livekit-turn.jsontodart.cn
+  tls_port: 5349
+  udp_port: 3478
+  external_tls: true
+room:
+  empty_timeout: 300
+  max_participants: 500
+webhook:
+  # Must be one of the keys given in LIVEKIT_KEYS.
+  api_key: API3ZsVxGX7h7Jr
+  urls:
+    # chat-api-chat runs on the docker host (mage start), port 10008.
+    - https://jsontodart.cn/chat/meeting/livekit_webhook
+    - https://jsontodart.cn/chat/meeting/conference/livekit_webhook
+logging:
+  level: info

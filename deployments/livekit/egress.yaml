@@ -1,0 +1,10 @@
+api_key: APIGPW3gnFTzqHH
+api_secret: CHANGE_ME_LIVEKIT_SECRET
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  db: 1
+insecure: true
+file_output:
+  local: true
+  # outputs written under /out when using docker-compose volume
