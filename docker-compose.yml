@@ -227,6 +227,9 @@ services:
   # LiveKit SFU for calls/meetings (used by xue-hua-chat). Shares the redis container above.
   # RTC media uses UDP 50000-50100; widen the range (also in config/livekit.yaml) for large rooms,
   # or switch this service to network_mode: host on Linux for best media performance.
+  # IP debug: do not enable --profile caddy. After changing livekit.yaml / LIVEKIT_NODE_IP:
+  #   docker compose up -d livekit
+  # Firewall TCP: 7880, 7881. UDP: 50000-50100. IM/Chat/MinIO: 10001, 10002, 10005, 10008, 10009.
   livekit:
     image: "${LIVEKIT_IMAGE}"
     container_name: livekit
@@ -234,6 +237,7 @@ services:
     environment:
       TZ: Asia/Shanghai
       LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+      LIVEKIT_NODE_IP: "${LIVEKIT_NODE_IP}"
     volumes:
       - ./config/livekit.yaml:/etc/livekit.yaml:ro
     ports:

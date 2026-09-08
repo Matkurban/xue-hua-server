@@ -11,8 +11,10 @@ rtc:
   tcp_port: 7881
   port_range_start: 50000
   port_range_end: 50100
-  # true when clients connect from outside this host (production). The public IP
-  # is auto-detected; override with LIVEKIT_NODE_IP if detection is wrong.
+  # Advertise this public IP in ICE candidates. Keep in sync with LIVEKIT_NODE_IP
+  # in docker-compose / .env. For domain + NAT, you can clear node_ip and rely on
+  # STUN via use_external_ip.
+  node_ip: 103.231.57.21
   use_external_ip: true
   enable_loopback_candidate: false
 redis:
@@ -35,8 +37,9 @@ webhook:
   # Must be one of the keys given in LIVEKIT_KEYS.
   api_key: API3ZsVxGX7h7Jr
   urls:
-    # chat-api-chat behind chat.jsontodart.cn (port 10008).
-    - https://chat.jsontodart.cn/meeting/livekit_webhook
-    - https://chat.jsontodart.cn/conference/livekit_webhook
+    # IP debug: LiveKit container -> host chat-api-chat (port 10008).
+    # Domain: https://chat.jsontodart.cn/meeting/livekit_webhook
+    - http://host.docker.internal:10008/meeting/livekit_webhook
+    - http://host.docker.internal:10008/conference/livekit_webhook
 logging:
   level: info

@@ -10,7 +10,8 @@ sessionToken:
 # Internal address of the MinIO server (API port)
 internalAddress: localhost:10005
 # External address of the MinIO server, accessible from outside. Supports both HTTP and HTTPS using a domain name
-# externalAddress: https://jsontodart.cn/im-minio-api
-externalAddress: https://server.jsontodart.cn/im-minio-api
+# IP debug: http://<public-ip>:10005
+# Domain:   https://jsontodart.cn/im-minio-api  or  https://server.jsontodart.cn/im-minio-api
+externalAddress: http://103.231.57.21:10005
 # Flag to enable or disable public read access to the bucket
 publicRead: false
