@@ -220,7 +220,8 @@ services:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: Matkurban520
     restart: always
-    command: minio server /data --console-address ':9090'
+    # 现在使用的镜像不需要在 server 前面加上 minio 如果替换别的镜像的时候需要检查一下
+    command: server /data --console-address ':9090'
     networks:
       - server
 
