@@ -87,7 +87,7 @@ services:
       - "12380:2380"
     environment:
       - ETCD_NAME=s1
-      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_DATA_DIR=/bitnami/etcd/data
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
       - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
@@ -95,7 +95,7 @@ services:
       - ETCD_INITIAL_CLUSTER=s1=http://0.0.0.0:2380
       - ETCD_INITIAL_CLUSTER_TOKEN=tkn
       - ETCD_INITIAL_CLUSTER_STATE=new
-      - ALLOW_NONE_AUTHENTICATION=no
+      - ALLOW_NONE_AUTHENTICATION=yes
 
       ## Optional: Enable etcd authentication by setting the following credentials
       # - ETCD_ROOT_USER=root
@@ -103,7 +103,7 @@ services:
       # - ETCD_USERNAME=server
       # - ETCD_PASSWORD=openIM123
     volumes:
-      - "${DATA_DIR}/components/etcd:/etcd-data"
+      - "${DATA_DIR}/components/etcd:/bitnami/etcd"
     command: >
       /bin/sh -c '
         etcd &
@@ -208,6 +208,7 @@ services:
   # MinIO container is commented out - using external MinIO service
   minio:
     image: "${MINIO_IMAGE}"
+    user: "0:0"
     ports:
       - "10005:9000"
       - "19090:9090"
