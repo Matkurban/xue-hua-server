@@ -6,7 +6,6 @@ import (
 	"gitee.com/matkurban/openimsdk-tools/log"
 	"gitee.com/matkurban/openimsdk-tools/utils/timeutil"
 	"github.com/openimsdk/protocol/constant"
-	"github.com/openimsdk/protocol/conversation"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"
 	"server/v3/pkg/authverify"
@@ -60,7 +59,7 @@ func (m *msgServer) DeleteMsgs(ctx context.Context, req *msg.DeleteMsgsReq) (*ms
 		if err := m.MsgDatabase.DeleteMsgsPhysicalBySeqs(ctx, req.ConversationID, req.Seqs); err != nil {
 			return nil, err
 		}
-		conv, err := m.conversationClient.GetConversationsByConversationID(ctx, req.ConversationID)
+		conv, err := m.conversationClient.GetConversation(ctx, req.ConversationID, req.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -102,14 +101,12 @@ func (m *msgServer) DeleteMsgPhysical(ctx context.Context, req *msg.DeleteMsgPhy
 }
 
 func (m *msgServer) clearConversation(ctx context.Context, conversationIDs []string, userID string, deleteSyncOpt *msg.DeleteSyncOpt) error {
-	conversations, err := m.conversationClient.GetConversationsByConversationIDs(ctx, conversationIDs)
+	conversations, err := m.conversationClient.GetConversations(ctx, conversationIDs, userID)
 	if err != nil {
 		return err
 	}
-	var existConversations []*conversation.Conversation
 	var existConversationIDs []string
 	for _, oneConversation := range conversations {
-		existConversations = append(existConversations, oneConversation)
 		existConversationIDs = append(existConversationIDs, oneConversation.ConversationID)
 	}
 	log.ZDebug(ctx, "ClearConversationsMsg", "existConversationIDs", existConversationIDs)
@@ -138,9 +135,9 @@ func (m *msgServer) clearConversation(ctx context.Context, conversationIDs []str
 		if err := m.MsgDatabase.SetMinSeqs(ctx, m.getMinSeqs(maxSeqs)); err != nil {
 			return err
 		}
-		for _, existConversation := range existConversations {
-			tips := &sdkws.ClearConversationTips{UserID: userID, ConversationIDs: []string{existConversation.ConversationID}}
-			m.notificationSender.NotificationWithSessionType(ctx, userID, m.conversationAndGetRecvID(existConversation, userID), constant.ClearConversationNotification, existConversation.ConversationType, tips)
+		for _, oneConversation := range conversations {
+			tips := &sdkws.ClearConversationTips{UserID: userID, ConversationIDs: []string{oneConversation.ConversationID}}
+			m.notificationSender.NotificationWithSessionType(ctx, userID, m.conversationAndGetRecvID(oneConversation, userID), constant.ClearConversationNotification, oneConversation.ConversationType, tips)
 		}
 	}
 	if err := m.MsgDatabase.UserSetHasReadSeqs(ctx, userID, maxSeqs); err != nil {

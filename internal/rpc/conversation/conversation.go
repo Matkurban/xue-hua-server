@@ -716,53 +716,18 @@ func (c *conversationServer) GetOwnerConversation(ctx context.Context, req *pbco
 }
 
 func (c *conversationServer) GetConversationsNeedClearMsg(ctx context.Context, _ *pbconversation.GetConversationsNeedClearMsgReq) (*pbconversation.GetConversationsNeedClearMsgResp, error) {
-	num, err := c.conversationDatabase.GetAllConversationIDsNumber(ctx)
+	// Protocol still exposes this RPC; implement via the DB query that correctly
+	// filters by owner+conversation and destruct criteria (avoids the old
+	// PageConversationIDs + GetConversationsByConversationID out-of-index path).
+	conversations, err := c.conversationDatabase.GetConversationIDsNeedDestruct(ctx)
 	if err != nil {
-		log.ZError(ctx, "GetAllConversationIDsNumber failed", err)
+		log.ZError(ctx, "GetConversationIDsNeedDestruct failed", err)
 		return nil, err
 	}
-	const batchNum = 100
-
-	if num == 0 {
+	if len(conversations) == 0 {
 		return nil, errs.New("Need Destruct Msg is nil").Wrap()
 	}
-
-	maxPage := (num + batchNum - 1) / batchNum
-
-	temp := make([]*dbModel.Conversation, 0, maxPage*batchNum)
-
-	for pageNumber := 0; pageNumber < int(maxPage); pageNumber++ {
-		pagination := &sdkws.RequestPagination{
-			PageNumber: int32(pageNumber),
-			ShowNumber: batchNum,
-		}
-
-		conversationIDs, err := c.conversationDatabase.PageConversationIDs(ctx, pagination)
-		if err != nil {
-			log.ZError(ctx, "PageConversationIDs failed", err, "pageNumber", pageNumber)
-			continue
-		}
-
-		// log.ZDebug(ctx, "PageConversationIDs success", "pageNumber", pageNumber, "conversationIDsNum", len(conversationIDs), "conversationIDs", conversationIDs)
-		if len(conversationIDs) == 0 {
-			continue
-		}
-
-		conversations, err := c.conversationDatabase.GetConversationsByConversationID(ctx, conversationIDs)
-		if err != nil {
-			log.ZError(ctx, "GetConversationsByConversationID failed", err, "conversationIDs", conversationIDs)
-			continue
-		}
-
-		for _, conversation := range conversations {
-			if conversation.IsMsgDestruct && conversation.MsgDestructTime != 0 && ((time.Now().UnixMilli() > (conversation.MsgDestructTime + conversation.LatestMsgDestructTime.UnixMilli() + 8*60*60)) || // 8*60*60 is UTC+8
-				conversation.LatestMsgDestructTime.IsZero()) {
-				temp = append(temp, conversation)
-			}
-		}
-	}
-
-	return &pbconversation.GetConversationsNeedClearMsgResp{Conversations: convert.ConversationsDB2Pb(temp)}, nil
+	return &pbconversation.GetConversationsNeedClearMsgResp{Conversations: convert.ConversationsDB2Pb(conversations)}, nil
 }
 
 func (c *conversationServer) GetNotNotifyConversationIDs(ctx context.Context, req *pbconversation.GetNotNotifyConversationIDsReq) (*pbconversation.GetNotNotifyConversationIDsResp, error) {
