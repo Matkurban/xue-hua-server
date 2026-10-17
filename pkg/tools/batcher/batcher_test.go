@@ -64,3 +64,33 @@ func TestBatcher(t *testing.T) {
 		t.Error("Data channel should be empty after closing")
 	}
 }
+
+func TestSchedulerExternalClose(t *testing.T) {
+	b := New[string](
+		WithSize(10),
+		WithBuffer(2),
+		WithWorker(1),
+		WithInterval(50*time.Millisecond),
+	)
+	b.Do = func(ctx context.Context, channelID int, vals *Msg[string]) {}
+	b.OnComplete = func(lastMessage *string, totalCount int) {}
+	b.Sharding = func(key string) int { return 0 }
+	b.Key = func(data *string) string { return *data }
+
+	if err := b.Start(); err != nil {
+		t.Fatal(err)
+	}
+	// Simulate an external close of b.data while the scheduler is running.
+	// Without the externallyClosed guard this panics: close of closed channel.
+	close(b.data)
+	done := make(chan struct{})
+	go func() {
+		b.wait.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("scheduler did not exit after external close")
+	}
+}
