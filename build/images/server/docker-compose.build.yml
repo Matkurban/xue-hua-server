@@ -1,0 +1,120 @@
+services:
+  server-api:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-api
+        BINARY_NAME: server-api
+        RELEASE: ${RELEASE:-false}
+    image: server-api:test
+
+  server-crontask:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-crontask
+        BINARY_NAME: server-crontask
+        RELEASE: ${RELEASE:-false}
+    image: server-crontask:test
+
+  server-msggateway:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-msggateway
+        BINARY_NAME: server-msggateway
+        RELEASE: ${RELEASE:-false}
+    image: server-msggateway:test
+
+  server-msgtransfer:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-msgtransfer
+        BINARY_NAME: server-msgtransfer
+        RELEASE: ${RELEASE:-false}
+    image: server-msgtransfer:test
+
+  server-push:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-push
+        BINARY_NAME: server-push
+        RELEASE: ${RELEASE:-false}
+    image: server-push:test
+
+  server-rpc-auth:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-auth
+        BINARY_NAME: server-rpc-auth
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-auth:test
+
+  server-rpc-conversation:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-conversation
+        BINARY_NAME: server-rpc-conversation
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-conversation:test
+
+  server-rpc-friend:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-friend
+        BINARY_NAME: server-rpc-friend
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-friend:test
+
+  server-rpc-group:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-group
+        BINARY_NAME: server-rpc-group
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-group:test
+
+  server-rpc-msg:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-msg
+        BINARY_NAME: server-rpc-msg
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-msg:test
+
+  server-rpc-third:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-third
+        BINARY_NAME: server-rpc-third
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-third:test
+
+  server-rpc-user:
+    build:
+      context: ../../..
+      dockerfile: build/images/server/Dockerfile
+      args:
+        CMD_PATH: cmd/server-rpc/server-rpc-user
+        BINARY_NAME: server-rpc-user
+        RELEASE: ${RELEASE:-false}
+    image: server-rpc-user:test
