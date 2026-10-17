@@ -24,6 +24,14 @@ const (
 	MomentVisibleSelf    MomentVisibleType = 3
 )
 
+// Moment.Status values. Documents lacking the field (legacy) are treated as normal:
+// all queries use $ne/$nin on status, never equality with MomentStatusNormal.
+const (
+	MomentStatusNormal  int32 = 0
+	MomentStatusDeleted int32 = 1 // soft-deleted by the author
+	MomentStatusBanned  int32 = 2 // hidden by an admin; restorable
+)
+
 type MomentMediaItem struct {
 	Type     string `bson:"type" json:"type"`
 	URL      string `bson:"url" json:"url"`

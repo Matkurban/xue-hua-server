@@ -20,6 +20,7 @@ import (
 
 	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"gitee.com/matkurban/openimsdk-tools/errs"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -73,4 +74,16 @@ func (m *MomentLikeMgo) FindByMoments(ctx context.Context, momentIDs []string) (
 	filter := bson.M{"moment_id": bson.M{"$in": momentIDs}}
 	opt := options.Find().SetSort(bson.D{{Key: "create_time", Value: -1}})
 	return mongoutil.Find[*model.MomentLike](ctx, m.coll, filter, opt)
+}
+
+func (m *MomentLikeMgo) DeleteByMoments(ctx context.Context, momentIDs []string) error {
+	if len(momentIDs) == 0 {
+		return nil
+	}
+	_, err := m.coll.DeleteMany(ctx, bson.M{"moment_id": bson.M{"$in": momentIDs}})
+	return errs.Wrap(err)
+}
+
+func (m *MomentLikeMgo) Count(ctx context.Context, filter any) (int64, error) {
+	return m.coll.CountDocuments(ctx, filter)
 }

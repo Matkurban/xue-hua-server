@@ -233,6 +233,16 @@ func newGinRouter(ctx context.Context, client discovery.SvcDiscoveryRegistry, cf
 		momentGroup.POST("/delete_comment", momentApi.DeleteComment)
 		momentGroup.POST("/like", momentApi.LikeMoment)
 		momentGroup.POST("/unlike", momentApi.UnlikeMoment)
+		// admin only
+		momentGroup.POST("/admin/list", momentApi.AdminListMoments)
+		momentGroup.POST("/admin/detail", momentApi.AdminGetMoment)
+		momentGroup.POST("/admin/delete", momentApi.AdminDeleteMoments)
+		momentGroup.POST("/admin/comment_list", momentApi.AdminListComments)
+		momentGroup.POST("/admin/delete_comment", momentApi.AdminDeleteComment)
+		momentGroup.POST("/admin/like_list", momentApi.AdminListLikes)
+		momentGroup.POST("/admin/ban", momentApi.AdminBanMoments)
+		momentGroup.POST("/admin/restore", momentApi.AdminRestoreMoments)
+		momentGroup.POST("/admin/stats", momentApi.AdminStats)
 	}
 
 	{

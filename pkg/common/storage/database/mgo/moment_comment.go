@@ -20,6 +20,7 @@ import (
 
 	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"gitee.com/matkurban/openimsdk-tools/errs"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -74,4 +75,27 @@ func (m *MomentCommentMgo) FindByMoments(ctx context.Context, momentIDs []string
 	filter := bson.M{"moment_id": bson.M{"$in": momentIDs}, "status": bson.M{"$ne": int32(1)}}
 	opt := options.Find().SetSort(bson.D{{Key: "create_time", Value: 1}})
 	return mongoutil.Find[*model.MomentComment](ctx, m.coll, filter, opt)
+}
+
+// AdminDelete soft-deletes a comment regardless of its author. It reports whether
+// the comment transitioned from visible to deleted (so counters must be decremented).
+func (m *MomentCommentMgo) AdminDelete(ctx context.Context, commentID string) (bool, error) {
+	filter := bson.M{"comment_id": commentID, "status": bson.M{"$ne": int32(1)}}
+	res, err := m.coll.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"status": int32(1), "update_time": time.Now()}})
+	if err != nil {
+		return false, errs.Wrap(err)
+	}
+	return res.MatchedCount > 0, nil
+}
+
+func (m *MomentCommentMgo) DeleteByMoments(ctx context.Context, momentIDs []string) error {
+	if len(momentIDs) == 0 {
+		return nil
+	}
+	_, err := m.coll.DeleteMany(ctx, bson.M{"moment_id": bson.M{"$in": momentIDs}})
+	return errs.Wrap(err)
+}
+
+func (m *MomentCommentMgo) Count(ctx context.Context, filter any) (int64, error) {
+	return m.coll.CountDocuments(ctx, filter)
 }

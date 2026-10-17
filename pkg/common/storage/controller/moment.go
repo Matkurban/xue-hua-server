@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
@@ -42,6 +43,13 @@ type MomentDatabase interface {
 	ResolveVisibleUserIDs(ctx context.Context, moment *model.Moment) ([]string, error)
 	FindCommentsByMoments(ctx context.Context, momentIDs []string) ([]*model.MomentComment, error)
 	FindLikesByMoments(ctx context.Context, momentIDs []string) ([]*model.MomentLike, error)
+
+	// admin operations
+	AdminListMoments(ctx context.Context, filter AdminMomentFilter, pagination pagination.Pagination) (int64, []*model.Moment, error)
+	AdminDeleteMoments(ctx context.Context, momentIDs []string) (int64, error)
+	AdminSetMomentStatus(ctx context.Context, momentIDs []string, status int32) (int64, error)
+	AdminDeleteComment(ctx context.Context, commentID string) (*model.MomentComment, error)
+	AdminStats(ctx context.Context, dayStart time.Time) (*MomentStats, error)
 }
 
 type momentDatabase struct {
@@ -238,7 +246,7 @@ func (m *momentDatabase) ListVisibleMoments(ctx context.Context, viewerUserID, o
 	if viewerUserID == "" {
 		return 0, nil, errs.ErrArgs.WrapMsg("viewerUserID is empty")
 	}
-	filter := bson.M{"status": bson.M{"$ne": int32(1)}}
+	filter := bson.M{"status": bson.M{"$nin": []int32{model.MomentStatusDeleted, model.MomentStatusBanned}}}
 	if ownerUserID != "" {
 		filter["user_id"] = ownerUserID
 		if ownerUserID == viewerUserID {
@@ -295,4 +303,142 @@ func (m *momentDatabase) ListVisibleMoments(ctx context.Context, viewerUserID, o
 	filter["$or"] = orFilters
 
 	return m.moment.FindPage(ctx, filter, pagination)
+}
+
+// AdminMomentFilter is the filter of the admin moment list. Zero values mean "no filter".
+type AdminMomentFilter struct {
+	UserID    string
+	Keyword   string
+	StartTime int64 // ms, inclusive
+	EndTime   int64 // ms, inclusive
+	// Status: nil = every non user-deleted moment; otherwise exactly that status
+	// (0 matches legacy documents lacking the field).
+	Status *int32
+}
+
+// BuildAdminMomentFilter converts the admin filter to a mongo filter.
+func BuildAdminMomentFilter(f AdminMomentFilter) (bson.M, error) {
+	if f.StartTime < 0 || f.EndTime < 0 {
+		return nil, errs.ErrArgs.WrapMsg("time must not be negative")
+	}
+	if f.StartTime > 0 && f.EndTime > 0 && f.StartTime > f.EndTime {
+		return nil, errs.ErrArgs.WrapMsg("startTime is after endTime")
+	}
+	filter := bson.M{}
+	if f.Status == nil {
+		filter["status"] = bson.M{"$ne": model.MomentStatusDeleted}
+	} else {
+		switch *f.Status {
+		case model.MomentStatusNormal:
+			filter["status"] = bson.M{"$nin": []int32{model.MomentStatusDeleted, model.MomentStatusBanned}}
+		case model.MomentStatusDeleted, model.MomentStatusBanned:
+			filter["status"] = *f.Status
+		default:
+			return nil, errs.ErrArgs.WrapMsg("invalid status")
+		}
+	}
+	if f.UserID != "" {
+		filter["user_id"] = f.UserID
+	}
+	if kw := f.Keyword; kw != "" {
+		filter["content"] = bson.M{"$regex": regexp.QuoteMeta(kw), "$options": "i"}
+	}
+	if f.StartTime > 0 || f.EndTime > 0 {
+		r := bson.M{}
+		if f.StartTime > 0 {
+			r["$gte"] = time.UnixMilli(f.StartTime)
+		}
+		if f.EndTime > 0 {
+			r["$lte"] = time.UnixMilli(f.EndTime)
+		}
+		filter["create_time"] = r
+	}
+	return filter, nil
+}
+
+type MomentStats struct {
+	TotalMoments  int64 `json:"totalMoments"`
+	TodayMoments  int64 `json:"todayMoments"`
+	BannedMoments int64 `json:"bannedMoments"`
+	TotalComments int64 `json:"totalComments"`
+	TotalLikes    int64 `json:"totalLikes"`
+}
+
+func (m *momentDatabase) AdminListMoments(ctx context.Context, f AdminMomentFilter, pagination pagination.Pagination) (int64, []*model.Moment, error) {
+	filter, err := BuildAdminMomentFilter(f)
+	if err != nil {
+		return 0, nil, err
+	}
+	return m.moment.FindPage(ctx, filter, pagination)
+}
+
+// AdminDeleteMoments physically deletes moments together with their comments and likes.
+// Returns the number of moments deleted.
+func (m *momentDatabase) AdminDeleteMoments(ctx context.Context, momentIDs []string) (int64, error) {
+	momentIDs = datautil.Distinct(momentIDs)
+	if len(momentIDs) == 0 {
+		return 0, errs.ErrArgs.WrapMsg("momentIDs is empty")
+	}
+	if err := m.comment.DeleteByMoments(ctx, momentIDs); err != nil {
+		return 0, err
+	}
+	if err := m.like.DeleteByMoments(ctx, momentIDs); err != nil {
+		return 0, err
+	}
+	return m.moment.DeleteByIDs(ctx, momentIDs)
+}
+
+// AdminSetMomentStatus bans (MomentStatusBanned) or restores (MomentStatusNormal) moments.
+// User-deleted moments are untouched. Returns the number of matched moments.
+func (m *momentDatabase) AdminSetMomentStatus(ctx context.Context, momentIDs []string, status int32) (int64, error) {
+	if status != model.MomentStatusNormal && status != model.MomentStatusBanned {
+		return 0, errs.ErrArgs.WrapMsg("invalid status")
+	}
+	momentIDs = datautil.Distinct(momentIDs)
+	if len(momentIDs) == 0 {
+		return 0, errs.ErrArgs.WrapMsg("momentIDs is empty")
+	}
+	return m.moment.SetStatus(ctx, momentIDs, status)
+}
+
+func (m *momentDatabase) AdminDeleteComment(ctx context.Context, commentID string) (*model.MomentComment, error) {
+	if commentID == "" {
+		return nil, errs.ErrArgs.WrapMsg("commentID is empty")
+	}
+	comment, err := m.comment.Take(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+	changed, err := m.comment.AdminDelete(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+	if changed {
+		if err := m.moment.IncCounts(ctx, comment.MomentID, 0, -1); err != nil && !mgo.IsNotFound(err) {
+			return nil, err
+		}
+	}
+	return comment, nil
+}
+
+func (m *momentDatabase) AdminStats(ctx context.Context, dayStart time.Time) (*MomentStats, error) {
+	notDeleted := bson.M{"status": bson.M{"$ne": model.MomentStatusDeleted}}
+	var st MomentStats
+	var err error
+	if st.TotalMoments, err = m.moment.Count(ctx, notDeleted); err != nil {
+		return nil, err
+	}
+	if st.TodayMoments, err = m.moment.Count(ctx, bson.M{"status": bson.M{"$ne": model.MomentStatusDeleted}, "create_time": bson.M{"$gte": dayStart}}); err != nil {
+		return nil, err
+	}
+	if st.BannedMoments, err = m.moment.Count(ctx, bson.M{"status": model.MomentStatusBanned}); err != nil {
+		return nil, err
+	}
+	if st.TotalComments, err = m.comment.Count(ctx, notDeleted); err != nil {
+		return nil, err
+	}
+	if st.TotalLikes, err = m.like.Count(ctx, bson.M{}); err != nil {
+		return nil, err
+	}
+	return &st, nil
 }

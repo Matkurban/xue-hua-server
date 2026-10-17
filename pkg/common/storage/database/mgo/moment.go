@@ -20,6 +20,7 @@ import (
 
 	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"gitee.com/matkurban/openimsdk-tools/errs"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -38,6 +39,7 @@ func NewMomentMongo(db *mongo.Database) (database.Moment, error) {
 		{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "create_time", Value: -1}}},
 		{Keys: bson.D{{Key: "visible_type", Value: 1}, {Key: "create_time", Value: -1}}},
 		{Keys: bson.D{{Key: "status", Value: 1}, {Key: "create_time", Value: -1}}},
+		{Keys: bson.D{{Key: "create_time", Value: -1}}},
 		{Keys: bson.D{{Key: "visible_group_ids", Value: 1}}},
 	})
 	if err != nil {
@@ -91,4 +93,40 @@ func (m *MomentMgo) IncCounts(ctx context.Context, momentID string, likeDelta, c
 		update["$inc"] = inc
 	}
 	return mongoutil.UpdateOne(ctx, m.coll, bson.M{"moment_id": momentID}, update, true)
+}
+
+func (m *MomentMgo) Count(ctx context.Context, filter any) (int64, error) {
+	return m.coll.CountDocuments(ctx, filter)
+}
+
+// SetStatus sets the status of the given moments, ignoring user-deleted ones (status 1).
+func (m *MomentMgo) SetStatus(ctx context.Context, momentIDs []string, status int32) (int64, error) {
+	if len(momentIDs) == 0 {
+		return 0, nil
+	}
+	filter := bson.M{"moment_id": bson.M{"$in": momentIDs}, "status": bson.M{"$ne": int32(1)}}
+	res, err := m.coll.UpdateMany(ctx, filter, bson.M{"$set": bson.M{"status": status, "update_time": time.Now()}})
+	if err != nil {
+		return 0, errs.Wrap(err)
+	}
+	return res.MatchedCount, nil
+}
+
+// DeleteByIDs physically removes the moments.
+func (m *MomentMgo) DeleteByIDs(ctx context.Context, momentIDs []string) (int64, error) {
+	if len(momentIDs) == 0 {
+		return 0, nil
+	}
+	res, err := m.coll.DeleteMany(ctx, bson.M{"moment_id": bson.M{"$in": momentIDs}})
+	if err != nil {
+		return 0, errs.Wrap(err)
+	}
+	return res.DeletedCount, nil
+}
+
+func (m *MomentMgo) FindByIDs(ctx context.Context, momentIDs []string) ([]*model.Moment, error) {
+	if len(momentIDs) == 0 {
+		return nil, nil
+	}
+	return mongoutil.Find[*model.Moment](ctx, m.coll, bson.M{"moment_id": bson.M{"$in": momentIDs}})
 }
