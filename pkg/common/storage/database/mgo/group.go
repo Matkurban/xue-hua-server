@@ -79,6 +79,9 @@ func (g *GroupMgo) CountTotal(ctx context.Context, before *time.Time) (count int
 }
 
 func (g *GroupMgo) CountRangeEverydayTotal(ctx context.Context, start time.Time, end time.Time) (map[string]int64, error) {
+	if !end.After(start) {
+		return map[string]int64{}, nil
+	}
 	pipeline := bson.A{
 		bson.M{
 			"$match": bson.M{
@@ -92,8 +95,9 @@ func (g *GroupMgo) CountRangeEverydayTotal(ctx context.Context, start time.Time,
 			"$group": bson.M{
 				"_id": bson.M{
 					"$dateToString": bson.M{
-						"format": "%Y-%m-%d",
-						"date":   "$create_time",
+						"format":   "%Y-%m-%d",
+						"date":     "$create_time",
+						"timezone": statTimezone,
 					},
 				},
 				"count": bson.M{
@@ -114,7 +118,7 @@ func (g *GroupMgo) CountRangeEverydayTotal(ctx context.Context, start time.Time,
 	for _, item := range items {
 		res[item.Date] = item.Count
 	}
-	return res, nil
+	return fillDayKeys(start, end, res), nil
 }
 
 func (g *GroupMgo) FindJoinSortGroupID(ctx context.Context, groupIDs []string) ([]string, error) {
