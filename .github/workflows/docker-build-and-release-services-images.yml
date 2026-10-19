@@ -2,8 +2,12 @@ name: Build and release services Docker Images
 
 on:
   push:
+    tags:
+      - "v*"
     branches:
-      - release-*
+      - main
+    paths:
+      - version/version.go
   workflow_dispatch:
     inputs:
       tag:
@@ -89,7 +93,7 @@ jobs:
       - name: Resolve Docker image tags
         id: tags
         env:
-          INPUT_TAG: ${{ inputs.tag || github.event.inputs.tag }}
+          INPUT_TAG: ${{ inputs.tag || github.event.inputs.tag || github.ref_name }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           CHECKOUT_SHORT_SHA: ${{ inputs.checkout_short_sha }}
         run: |

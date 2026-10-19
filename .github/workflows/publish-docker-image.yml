@@ -5,8 +5,12 @@ name: Publish Docker image to registries
 
 on:
   push:
+    tags:
+      - "v*"
     branches:
-      - release-*
+      - main
+    paths:
+      - version/version.go
   workflow_dispatch:
     inputs:
       tag:
@@ -69,7 +73,7 @@ jobs:
             type=semver,pattern=v{{version}}
             type=sha,enable=${{ inputs.checkout_short_sha == '' }}
             type=raw,value=sha-${{ inputs.checkout_short_sha }},enable=${{ inputs.checkout_short_sha != '' }}
-            type=raw,value=${{ inputs.tag || github.event.inputs.tag }}
+            type=raw,value=${{ inputs.tag || github.event.inputs.tag || github.ref_name }}
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
 
       - name: Log in to Docker Hub
