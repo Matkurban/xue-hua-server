@@ -12,4 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package redisutil // import "server/v3/pkg/common/redisutil"
+package redisutil // import "server/v3/pkg/common/storage/redisutil"

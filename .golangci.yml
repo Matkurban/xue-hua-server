@@ -378,7 +378,7 @@ linters-settings:
         - gorm.io/driver/mysql
         - k8s.io/klog
         - github.com/allowed/module
-        - go.mongodb.org/mongo-driver/mongo
+        - go.mongodb.org/mongo-driver/v2/mongo
         # - gopkg.in/yaml.v2
       domains:                                                        # List of allowed module domains
         - google.golang.org
