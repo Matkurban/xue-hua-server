@@ -27,7 +27,7 @@ func TestLoadServerConfigs(t *testing.T) {
 		{ServerRPCUserCfgFileName, &User{}},
 		{LogConfigFileName, &Log{}},
 		{MongodbConfigFileName, &Mongo{}},
-		{MinioConfigFileName, &Minio{}},
+		{RustFSConfigFileName, &RustFS{}},
 		{NotificationFileName, &Notification{}},
 		{WebhooksConfigFileName, &Webhooks{}},
 	}

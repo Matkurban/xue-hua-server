@@ -15,8 +15,8 @@ import (
 	"server/v3/pkg/common/s3/aws"
 	"server/v3/pkg/common/s3/cos"
 	"server/v3/pkg/common/s3/kodo"
-	"server/v3/pkg/common/s3/minio"
 	"server/v3/pkg/common/s3/oss"
+	"server/v3/pkg/common/s3/rustfs"
 	"github.com/go-viper/mapstructure/v2"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/cache/redis"
@@ -42,11 +42,11 @@ func readConf(path string, val any) error {
 
 func getS3(path string, name string, thirdConf *config.Third) (s3.Interface, error) {
 	switch name {
-	case "minio":
+	case "rustfs":
 		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 		defer cancel()
-		var minioConf config.Minio
-		if err := readConf(filepath.Join(path, minioConf.GetConfigFileName()), &minioConf); err != nil {
+		var rustfsConf config.RustFS
+		if err := readConf(filepath.Join(path, rustfsConf.GetConfigFileName()), &rustfsConf); err != nil {
 			return nil, err
 		}
 		var redisConf config.Redis
@@ -57,7 +57,7 @@ func getS3(path string, name string, thirdConf *config.Third) (s3.Interface, err
 		if err != nil {
 			return nil, err
 		}
-		return minio.NewMinio(ctx, redis.NewMinioCache(rdb), *minioConf.Build())
+		return rustfs.NewRustFS(ctx, redis.NewRustFSCache(rdb), *rustfsConf.Build())
 	case "cos":
 		return cos.NewCos(*thirdConf.Object.Cos.Build())
 	case "oss":

@@ -17,10 +17,10 @@ package cachekey
 import "strconv"
 
 const (
-	object         = "OBJECT:"
-	s3             = "S3:"
-	minioImageInfo = "MINIO:IMAGE:"
-	minioThumbnail = "MINIO:THUMBNAIL:"
+	object          = "OBJECT:"
+	s3              = "S3:"
+	rustfsImageInfo = "RUSTFS:IMAGE:"
+	rustfsThumbnail = "RUSTFS:THUMBNAIL:"
 )
 
 func GetObjectKey(engine string, name string) string {
@@ -32,9 +32,9 @@ func GetS3Key(engine string, name string) string {
 }
 
 func GetObjectImageInfoKey(key string) string {
-	return minioImageInfo + key
+	return rustfsImageInfo + key
 }
 
-func GetMinioImageThumbnailKey(key string, format string, width int, height int) string {
-	return minioThumbnail + format + ":w" + strconv.Itoa(width) + ":h" + strconv.Itoa(height) + ":" + key
+func GetObjectImageThumbnailKey(key string, format string, width int, height int) string {
+	return rustfsThumbnail + format + ":w" + strconv.Itoa(width) + ":h" + strconv.Itoa(height) + ":" + key
 }

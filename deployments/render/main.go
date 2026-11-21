@@ -63,7 +63,7 @@ func encode(value any) ([]byte, error) {
 
 func configMap(root, namespace string) (object, error) {
 	names := []string{
-		"discovery.yml", "kafka.yml", "local-cache.yml", "log.yml", "minio.yml",
+		"discovery.yml", "kafka.yml", "local-cache.yml", "log.yml", "rustfs.yml",
 		"mongodb.yml", "notification.yml", "redis.yml", "share.yml", "webhooks.yml",
 	}
 	for _, service := range services {
@@ -103,8 +103,8 @@ func configMap(root, namespace string) (object, error) {
 			set(config, "address", []string{"kafka-service:9092"})
 			set(config, "username", "")
 			set(config, "password", "")
-		case "minio.yml":
-			set(config, "internalAddress", "minio-service:10005")
+		case "rustfs.yml":
+			set(config, "internalAddress", "rustfs-service:10005")
 			set(config, "accessKeyID", "")
 			set(config, "secretAccessKey", "")
 		}
@@ -167,8 +167,8 @@ func manifests(service service, namespace, image string) (object, object) {
 			secretEnv("IMENV_REDIS_PASSWORD", "server-redis-secret", "redis-password"),
 			secretEnv("IMENV_MONGODB_USERNAME", "server-mongo-secret", "mongo_server_username"),
 			secretEnv("IMENV_MONGODB_PASSWORD", "server-mongo-secret", "mongo_server_password"),
-			secretEnv("IMENV_MINIO_ACCESSKEYID", "server-minio-secret", "minio-root-user"),
-			secretEnv("IMENV_MINIO_SECRETACCESSKEY", "server-minio-secret", "minio-root-password"),
+			secretEnv("IMENV_RUSTFS_ACCESSKEYID", "server-rustfs-secret", "rustfs-access-key"),
+			secretEnv("IMENV_RUSTFS_SECRETACCESSKEY", "server-rustfs-secret", "rustfs-secret-key"),
 			secretEnv("IMENV_KAFKA_PASSWORD", "server-kafka-secret", "kafka-password"),
 		},
 		"volumeMounts": []object{{"name": "server-config", "mountPath": "/config", "readOnly": true}},

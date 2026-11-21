@@ -2,7 +2,7 @@
 
 These are **single-instance development templates**, not a highly available
 production database topology. They use the `server` namespace and existing
-third-party MongoDB, Redis, Kafka and MinIO images. Review image availability,
+third-party MongoDB, Redis, Kafka and RustFS images. Review image availability,
 storage class, credentials, external object-storage URL, callbacks and ingress
 before deployment. These templates target a [fresh deployment](../README.md#fresh-deployment),
 not a migration of existing storage. Existing example credentials are preserved,

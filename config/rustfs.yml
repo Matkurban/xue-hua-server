@@ -1,0 +1,19 @@
+# Name of the bucket in RustFS
+bucket: server
+# Region used for S3 SigV4 signing (RustFS default: us-east-1)
+region: us-east-1
+# Access key ID for RustFS authentication
+# External RustFS service configuration
+accessKeyID: root
+# Secret access key for RustFS authentication
+secretAccessKey: Matkurban520
+# Session token for RustFS authentication (optional)
+sessionToken:
+# Internal address of the RustFS server (API port)
+internalAddress: localhost:10005
+# External address of the RustFS server, accessible from outside. Supports both HTTP and HTTPS using a domain name
+# IP debug: http://<public-ip>:10005
+# Domain:   https://jsontodart.cn/im-rustfs-api  or  https://server.jsontodart.cn/im-rustfs-api
+externalAddress: http://103.231.57.21:10005
+# Flag to enable or disable public read access to the bucket
+publicRead: false

@@ -82,14 +82,17 @@ data:
     remainRotationCount: 2
     rotationTime: 24
     storageLocation: ../../../../logs/
-  minio.yml: |
+
+  rustfs.yml: |
     accessKeyID: ""
     bucket: server
-    externalAddress: https://im.btcfi2.fun/im-minio-api
-    internalAddress: minio-service:10005
+    externalAddress: https://im.btcfi2.fun/im-rustfs-api
+    internalAddress: rustfs-service:10005
     publicRead: false
+    region: us-east-1
     secretAccessKey: ""
     sessionToken: null
+
   mongodb.yml: |
     address:
       - mongo-service:37017
@@ -682,7 +685,7 @@ data:
         secretID: null
         secretKey: null
         sessionToken: null
-      enable: minio
+      enable: rustfs
       kodo:
         accessKeyID: null
         accessKeySecret: null

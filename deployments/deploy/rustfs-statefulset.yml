@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rustfs
+  labels:
+    app: rustfs
+spec:
+  serviceName: rustfs-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rustfs
+  template:
+    metadata:
+      labels:
+        app: rustfs
+    spec:
+      containers:
+        - name: rustfs
+          image: rustfs/rustfs:latest
+          ports:
+            - containerPort: 9000 # RustFS S3 API port
+            - containerPort: 9001 # RustFS console port
+          volumeMounts:
+            - name: rustfs-data
+              mountPath: /data
+            - name: rustfs-logs
+              mountPath: /logs
+          env:
+            - name: RUSTFS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server-rustfs-secret
+                  key: rustfs-access-key
+            - name: RUSTFS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server-rustfs-secret
+                  key: rustfs-secret-key
+            - name: RUSTFS_ADDRESS
+              value: ":9000"
+            - name: RUSTFS_CONSOLE_ADDRESS
+              value: ":9001"
+            - name: RUSTFS_CONSOLE_ENABLE
+              value: "true"
+            - name: RUSTFS_OBS_LOG_DIRECTORY
+              value: "/logs"
+          args:
+            - /data
+      volumes:
+        - name: rustfs-data
+          persistentVolumeClaim:
+            claimName: rustfs-pvc
+        - name: rustfs-logs
+          persistentVolumeClaim:
+            claimName: rustfs-logs-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rustfs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rustfs-logs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -39,16 +39,16 @@ spec:
                 secretKeyRef:
                   key: mongo_server_password
                   name: server-mongo-secret
-            - name: IMENV_MINIO_ACCESSKEYID
+            - name: IMENV_RUSTFS_ACCESSKEYID
               valueFrom:
                 secretKeyRef:
-                  key: minio-root-user
-                  name: server-minio-secret
-            - name: IMENV_MINIO_SECRETACCESSKEY
+                  key: rustfs-access-key
+                  name: server-rustfs-secret
+            - name: IMENV_RUSTFS_SECRETACCESSKEY
               valueFrom:
                 secretKeyRef:
-                  key: minio-root-password
-                  name: server-minio-secret
+                  key: rustfs-secret-key
+                  name: server-rustfs-secret
             - name: IMENV_KAFKA_PASSWORD
               valueFrom:
                 secretKeyRef:

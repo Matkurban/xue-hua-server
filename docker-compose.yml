@@ -122,28 +122,28 @@ services:
         echo "Checking authentication status..."
         if ! etcdctl --endpoints=http://127.0.0.1:2379 auth status | grep -q "Authentication Status: true"; then
           echo "Authentication is disabled. Creating users and enabling..."
-          
+
           # Create users and setup permissions
           etcdctl --endpoints=http://127.0.0.1:2379 user add $${ETCD_ROOT_USER} --new-user-password=$${ETCD_ROOT_PASSWORD} || true
           etcdctl --endpoints=http://127.0.0.1:2379 user add $${ETCD_USERNAME} --new-user-password=$${ETCD_PASSWORD} || true
-          
+
           etcdctl --endpoints=http://127.0.0.1:2379 role add server-role || true
           etcdctl --endpoints=http://127.0.0.1:2379 role grant-permission server-role --prefix=true readwrite / || true
           etcdctl --endpoints=http://127.0.0.1:2379 role grant-permission server-role --prefix=true readwrite "" || true
           etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_USERNAME} server-role || true
-          
+
           etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_ROOT_USER} $${ETCD_USERNAME} root || true
-          
+
           echo "Enabling authentication..."
           etcdctl --endpoints=http://127.0.0.1:2379 auth enable
           echo "Authentication enabled successfully"
         else
           echo "Authentication is already enabled. Checking Server user..."
-          
+
           # Check if server user exists and can perform operations
           if ! etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_USERNAME}:$${ETCD_PASSWORD} put /test/auth "auth-check" &>/dev/null; then
             echo "Server user test failed. Recreating user with root credentials..."
-            
+
             # Try to create/update the server user using root credentials
             etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} user add $${ETCD_USERNAME} --new-user-password=$${ETCD_PASSWORD} --no-password-file || true
             etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} role add server-role || true
@@ -151,7 +151,7 @@ services:
             etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} role grant-permission server-role --prefix=true readwrite "" || true
             etcdctl --endpoints=http://127.0.0.1:2379 --user=$${ETCD_ROOT_USER}:$${ETCD_ROOT_PASSWORD} user grant-role $${ETCD_USERNAME} server-role || true
             etcdctl --endpoints=http://127.0.0.1:2379 user grant-role $${ETCD_ROOT_USER} $${ETCD_USERNAME} root || true
-            
+
             echo "Server user recreated with required permissions"
           else
             echo "Server user exists and has correct permissions"
@@ -169,7 +169,7 @@ services:
           echo "No authentication credentials provided. Running in no-auth mode."
           echo "To enable authentication, set ETCD_ROOT_USER, ETCD_ROOT_PASSWORD, ETCD_USERNAME, and ETCD_PASSWORD environment variables."
         fi
-        
+
         tail -f /dev/null
       '
     restart: always
@@ -205,26 +205,34 @@ services:
     networks:
       - server
 
-  # MinIO container is commented out - using external MinIO service
-  minio:
-    image: "${MINIO_IMAGE}"
-    user: "0:0"
+  rustfs:
+    image: "${RUSTFS_IMAGE}"
+    container_name: rustfs
     ports:
       - "10005:9000"
-      - "19090:9090"
-    container_name: minio
+      - "19090:9001"
     volumes:
-      - "${DATA_DIR}/components/mnt/data:/data"
-      - "${DATA_DIR}/components/mnt/config:/root/.minio"
+      - "${DATA_DIR}/components/rustfs/data:/data"
+      - "${DATA_DIR}/components/rustfs/logs:/logs"
     environment:
       TZ: Asia/Shanghai
-      MINIO_ROOT_USER: root
-      MINIO_ROOT_PASSWORD: Matkurban520
+      RUSTFS_ACCESS_KEY: "${RUSTFS_ACCESS_KEY:-root}"
+      RUSTFS_SECRET_KEY: "${RUSTFS_SECRET_KEY:-your-secret}"
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_OBS_LOGGER_LEVEL: info
+      RUSTFS_OBS_LOG_DIRECTORY: /logs
+    command: /data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     restart: always
-    # 现在使用的镜像不需要在 server 前面加上 minio 如果替换别的镜像的时候需要检查一下
-    command: server /data --console-address ':9090'
     networks:
       - server
+
 
   # LiveKit SFU for calls/meetings (used by xue-hua-chat). Shares the redis container above.
   # RTC media uses UDP 50000-50100; widen the range (also in config/livekit.yaml) for large rooms,

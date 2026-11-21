@@ -27,7 +27,7 @@ func NewThirdRpcCmd() *ThirdRpcCmd {
 		config.MongodbConfigFileName:     &thirdConfig.MongodbConfig,
 		config.ShareFileName:             &thirdConfig.Share,
 		config.NotificationFileName:      &thirdConfig.NotificationConfig,
-		config.MinioConfigFileName:       &thirdConfig.MinioConfig,
+		config.RustFSConfigFileName:      &thirdConfig.RustFSConfig,
 		config.LocalCacheConfigFileName:  &thirdConfig.LocalCacheConfig,
 		config.DiscoveryConfigFilename:   &thirdConfig.Discovery,
 	}
@@ -53,7 +53,7 @@ func (a *ThirdRpcCmd) runE() error {
 			a.thirdConfig.MongodbConfig.GetConfigFileName(),
 			a.thirdConfig.NotificationConfig.GetConfigFileName(),
 			a.thirdConfig.Share.GetConfigFileName(),
-			a.thirdConfig.MinioConfig.GetConfigFileName(),
+			a.thirdConfig.RustFSConfig.GetConfigFileName(),
 			a.thirdConfig.LocalCacheConfig.GetConfigFileName(),
 			a.thirdConfig.Discovery.GetConfigFileName(),
 		}, nil,

@@ -6,7 +6,7 @@
 | ------------------ |-------------------------------------------------------------|
 | **kafka.yml**      | Configuration for Kafka username, password, address, etc.   |
 | **redis.yml**      | Configuration for Redis password, address, etc.             |
-| **minio.yml**      | Configuration for MinIO username, password, address, etc.   |
+| **rustfs.yml**     | Configuration for RustFS username, password, address, etc.  |
 | **mongodb.yml**    | Configuration for MongoDB username, password, address, etc. |
 | **discovery.yml**  | Service discovery and etcd credentials and address.         |
 
@@ -44,7 +44,7 @@
 ## Common Configuration Modifications
 | Configuration Item                                              | Configuration File                |
 | -------------------------------------------------------- | ----------------------- |
-| Configure MinIO as object storage (focus on the externalAddress field) | `minio.yml`             |
+| Configure RustFS as object storage (focus on the externalAddress field) | `rustfs.yml`            |
 | Adjust log level and number of log files                              | `log.yml`               |
 | Enable or disable friend verification when sending messages                           | `server-rpc-msg.yml`    |
 | server secret                                         | `share.yml`             |

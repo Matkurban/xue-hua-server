@@ -1,7 +1,8 @@
-package minio
+package rustfs
 
 import "context"
 
+// ImageInfo caches decoded metadata for an image object stored in RustFS.
 type ImageInfo struct {
 	IsImg  bool   `json:"isImg"`
 	Width  int    `json:"width"`
@@ -10,9 +11,10 @@ type ImageInfo struct {
 	Etag   string `json:"etag"`
 }
 
+// Cache caches image metadata and generated thumbnail keys.
 type Cache interface {
 	GetImageObjectKeyInfo(ctx context.Context, key string, fn func(ctx context.Context) (*ImageInfo, error)) (*ImageInfo, error)
-	GetThumbnailKey(ctx context.Context, key string, format string, width int, height int, minioCache func(ctx context.Context) (string, error)) (string, error)
+	GetThumbnailKey(ctx context.Context, key string, format string, width int, height int, fn func(ctx context.Context) (string, error)) (string, error)
 	DelObjectImageInfoKey(ctx context.Context, keys ...string) error
 	DelImageThumbnailKey(ctx context.Context, key string, format string, width int, height int) error
 }

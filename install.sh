@@ -57,7 +57,7 @@ required = [
 required += [f"_output/bin/tools/linux/amd64/{name}" for name in ("check-component", "check-free-memory", "seq")]
 required += [f"config/server-{name}.yml" for name in services if name != "cmdutils"]
 required += [f"config/{name}.yml" for name in (
-    "discovery", "kafka", "local-cache", "log", "minio", "mongodb", "notification", "redis", "share", "webhooks",
+    "discovery", "kafka", "local-cache", "log", "rustfs", "mongodb", "notification", "redis", "share", "webhooks",
 )]
 
 def validate_path(name):

@@ -19,16 +19,15 @@ type S3Cache interface {
 	DelS3Key(engine string, keys ...string) S3Cache
 }
 
-// TODO integrating minio.Cache and MinioCache interfaces.
-type MinioCache interface {
+type RustFSCache interface {
 	BatchDeleter
-	GetImageObjectKeyInfo(ctx context.Context, key string, fn func(ctx context.Context) (*MinioImageInfo, error)) (*MinioImageInfo, error)
-	GetThumbnailKey(ctx context.Context, key string, format string, width int, height int, minioCache func(ctx context.Context) (string, error)) (string, error)
-	DelObjectImageInfoKey(keys ...string) MinioCache
-	DelImageThumbnailKey(key string, format string, width int, height int) MinioCache
+	GetImageObjectKeyInfo(ctx context.Context, key string, fn func(ctx context.Context) (*ObjectImageInfo, error)) (*ObjectImageInfo, error)
+	GetThumbnailKey(ctx context.Context, key string, format string, width int, height int, fn func(ctx context.Context) (string, error)) (string, error)
+	DelObjectImageInfoKey(keys ...string) RustFSCache
+	DelImageThumbnailKey(key string, format string, width int, height int) RustFSCache
 }
 
-type MinioImageInfo struct {
+type ObjectImageInfo struct {
 	IsImg  bool   `json:"isImg"`
 	Width  int    `json:"width"`
 	Height int    `json:"height"`

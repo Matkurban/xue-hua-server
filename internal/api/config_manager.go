@@ -98,8 +98,8 @@ func (cm *ConfigManager) SetConfig(c *gin.Context) {
 		err = compareAndSave[config.LocalCache](c, cm.config.Name2Config(req.ConfigName), &req, cm)
 	case cm.config.Log.GetConfigFileName():
 		err = compareAndSave[config.Log](c, cm.config.Name2Config(req.ConfigName), &req, cm)
-	case cm.config.Minio.GetConfigFileName():
-		err = compareAndSave[config.Minio](c, cm.config.Name2Config(req.ConfigName), &req, cm)
+	case cm.config.RustFS.GetConfigFileName():
+		err = compareAndSave[config.RustFS](c, cm.config.Name2Config(req.ConfigName), &req, cm)
 	case cm.config.Mongo.GetConfigFileName():
 		err = compareAndSave[config.Mongo](c, cm.config.Name2Config(req.ConfigName), &req, cm)
 	case cm.config.Notification.GetConfigFileName():
@@ -171,8 +171,8 @@ func (cm *ConfigManager) SetConfigs(c *gin.Context) {
 			op, err = compareAndOp[config.LocalCache](c, cm.config.Name2Config(cf.ConfigName), &cf, cm)
 		case cm.config.Log.GetConfigFileName():
 			op, err = compareAndOp[config.Log](c, cm.config.Name2Config(cf.ConfigName), &cf, cm)
-		case cm.config.Minio.GetConfigFileName():
-			op, err = compareAndOp[config.Minio](c, cm.config.Name2Config(cf.ConfigName), &cf, cm)
+		case cm.config.RustFS.GetConfigFileName():
+			op, err = compareAndOp[config.RustFS](c, cm.config.Name2Config(cf.ConfigName), &cf, cm)
 		case cm.config.Mongo.GetConfigFileName():
 			op, err = compareAndOp[config.Mongo](c, cm.config.Name2Config(cf.ConfigName), &cf, cm)
 		case cm.config.Notification.GetConfigFileName():
@@ -290,7 +290,7 @@ func (cm *ConfigManager) resetConfig(c *gin.Context, checkChange bool, ops ...cl
 		cm.config.Kafka.GetConfigFileName():        {old: &cm.config.Kafka, new: new(config.Kafka)},
 		cm.config.LocalCache.GetConfigFileName():   {old: &cm.config.LocalCache, new: new(config.LocalCache)},
 		cm.config.Log.GetConfigFileName():          {old: &cm.config.Log, new: new(config.Log)},
-		cm.config.Minio.GetConfigFileName():        {old: &cm.config.Minio, new: new(config.Minio)},
+		cm.config.RustFS.GetConfigFileName():       {old: &cm.config.RustFS, new: new(config.RustFS)},
 		cm.config.Mongo.GetConfigFileName():        {old: &cm.config.Mongo, new: new(config.Mongo)},
 		cm.config.Notification.GetConfigFileName(): {old: &cm.config.Notification, new: new(config.Notification)},
 		cm.config.API.GetConfigFileName():          {old: &cm.config.API, new: new(config.API)},

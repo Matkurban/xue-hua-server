@@ -10,8 +10,8 @@ import (
 	"server/v3/pkg/common/s3/aws"
 	"server/v3/pkg/common/s3/cos"
 	"server/v3/pkg/common/s3/kodo"
-	"server/v3/pkg/common/s3/minio"
 	"server/v3/pkg/common/s3/oss"
+	"server/v3/pkg/common/s3/rustfs"
 )
 
 const StructTagName = "yaml"
@@ -47,8 +47,9 @@ type Log struct {
 	WithStack           bool   `yaml:"withStack"`
 }
 
-type Minio struct {
+type RustFS struct {
 	Bucket          string `yaml:"bucket"`
+	Region          string `yaml:"region"`
 	AccessKeyID     string `yaml:"accessKeyID"`
 	SecretAccessKey string `yaml:"secretAccessKey"`
 	SessionToken    string `yaml:"sessionToken"`
@@ -598,21 +599,25 @@ func (k *Kafka) Build() *kafka.Config {
 	}
 }
 
-func (m *Minio) Build() *minio.Config {
+func (r *RustFS) Build() *rustfs.Config {
 	formatEndpoint := func(address string) string {
+		if address == "" {
+			return ""
+		}
 		if strings.HasPrefix(address, "http://") || strings.HasPrefix(address, "https://") {
 			return address
 		}
 		return "http://" + address
 	}
-	return &minio.Config{
-		Bucket:          m.Bucket,
-		AccessKeyID:     m.AccessKeyID,
-		SecretAccessKey: m.SecretAccessKey,
-		SessionToken:    m.SessionToken,
-		PublicRead:      m.PublicRead,
-		Endpoint:        formatEndpoint(m.InternalAddress),
-		SignEndpoint:    formatEndpoint(m.ExternalAddress),
+	return &rustfs.Config{
+		Bucket:          r.Bucket,
+		Region:          r.Region,
+		AccessKeyID:     r.AccessKeyID,
+		SecretAccessKey: r.SecretAccessKey,
+		SessionToken:    r.SessionToken,
+		PublicRead:      r.PublicRead,
+		Endpoint:        formatEndpoint(r.InternalAddress),
+		SignEndpoint:    formatEndpoint(r.ExternalAddress),
 	}
 }
 
@@ -746,7 +751,7 @@ type AllConfig struct {
 	Kafka        Kafka
 	LocalCache   LocalCache
 	Log          Log
-	Minio        Minio
+	RustFS       RustFS
 	Mongo        Mongo
 	Notification Notification
 	API          API
@@ -776,8 +781,8 @@ func (a *AllConfig) Name2Config(name string) any {
 		return a.LocalCache
 	case a.Log.GetConfigFileName():
 		return a.Log
-	case a.Minio.GetConfigFileName():
-		return a.Minio
+	case a.RustFS.GetConfigFileName():
+		return a.RustFS
 	case a.Mongo.GetConfigFileName():
 		return a.Mongo
 	case a.Notification.GetConfigFileName():
@@ -823,7 +828,7 @@ func (a *AllConfig) GetConfigNames() []string {
 		a.Kafka.GetConfigFileName(),
 		a.LocalCache.GetConfigFileName(),
 		a.Log.GetConfigFileName(),
-		a.Minio.GetConfigFileName(),
+		a.RustFS.GetConfigFileName(),
 		a.Mongo.GetConfigFileName(),
 		a.Notification.GetConfigFileName(),
 		a.API.GetConfigFileName(),
@@ -850,7 +855,7 @@ const (
 	KafkaConfigFileName              = "kafka.yml"
 	LocalCacheConfigFileName         = "local-cache.yml"
 	LogConfigFileName                = "log.yml"
-	MinioConfigFileName              = "minio.yml"
+	RustFSConfigFileName             = "rustfs.yml"
 	MongodbConfigFileName            = "mongodb.yml"
 	NotificationFileName             = "notification.yml"
 	ServerAPICfgFileName             = "server-api.yml"
@@ -886,8 +891,8 @@ func (l *Log) GetConfigFileName() string {
 	return LogConfigFileName
 }
 
-func (m *Minio) GetConfigFileName() string {
-	return MinioConfigFileName
+func (r *RustFS) GetConfigFileName() string {
+	return RustFSConfigFileName
 }
 
 func (m *Mongo) GetConfigFileName() string {

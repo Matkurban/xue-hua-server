@@ -6,7 +6,7 @@
 | ------------------ | ---------------------------------- |
 | **kafka.yml**      | Kafka用户名、密码、地址等配置      |
 | **redis.yml**      | Redis密码、地址等配置              |
-| **minio.yml**      | MinIO用户名、密码、地址等配置      |
+| **rustfs.yml**     | RustFS用户名、密码、地址等配置     |
 | **mongodb.yml**    | MongoDB用户名、密码、地址等配置    |
 | **discovery.yml**  | 服务发现以及etcd用户名、密码、地址 |
 
@@ -44,7 +44,7 @@
 ## 常用配置修改
 | 修改配置项                                               | 配置文件                |
 | -------------------------------------------------------- | ----------------------- |
-| 使用minio作为对象存储时配置，重点关注externalAddress字段 | `minio.yml`             |
+| 使用rustfs作为对象存储时配置，重点关注externalAddress字段 | `rustfs.yml`            |
 | 日志级别及日志文件数量调整                               | `log.yml`               |
 | 发送消息是否需要验证好友关系                             | `server-rpc-msg.yml`    |
 | server秘钥                                         | `share.yml`             |

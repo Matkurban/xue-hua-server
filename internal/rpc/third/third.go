@@ -22,8 +22,8 @@ import (
 	"server/v3/pkg/discovery"
 	"server/v3/pkg/common/s3"
 	"server/v3/pkg/common/s3/cos"
-	"server/v3/pkg/common/s3/minio"
 	"server/v3/pkg/common/s3/oss"
+	"server/v3/pkg/common/s3/rustfs"
 	"github.com/openimsdk/protocol/third"
 	"google.golang.org/grpc"
 	"server/v3/pkg/common/storage/controller"
@@ -45,7 +45,7 @@ type Config struct {
 	MongodbConfig      config.Mongo
 	NotificationConfig config.Notification
 	Share              config.Share
-	MinioConfig        config.Minio
+	RustFSConfig       config.RustFS
 	LocalCacheConfig   config.LocalCache
 	Discovery          config.Discovery
 }
@@ -82,18 +82,18 @@ func Start(ctx context.Context, config *Config, client discovery.SvcDiscoveryReg
 	// Select the oss method according to the profile policy
 	var o s3.Interface
 	switch enable := config.RpcConfig.Object.Enable; enable {
-	case "minio":
-		var minioCache minio.Cache
+	case "rustfs":
+		var rustfsCache rustfs.Cache
 		if rdb == nil {
 			mc, err := mgo.NewCacheMgo(mgocli.GetDB())
 			if err != nil {
 				return err
 			}
-			minioCache = mcache.NewMinioCache(mc)
+			rustfsCache = mcache.NewRustFSCache(mc)
 		} else {
-			minioCache = redis.NewMinioCache(rdb)
+			rustfsCache = redis.NewRustFSCache(rdb)
 		}
-		o, err = minio.NewMinio(ctx, minioCache, *config.MinioConfig.Build())
+		o, err = rustfs.NewRustFS(ctx, rustfsCache, *config.RustFSConfig.Build())
 	case "cos":
 		o, err = cos.NewCos(*config.RpcConfig.Object.Cos.Build())
 	case "oss":

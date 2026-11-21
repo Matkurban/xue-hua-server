@@ -27,7 +27,7 @@ func NewApiCmd() *ApiCmd {
 		config.KafkaConfigFileName:              &apiConfig.Kafka,
 		config.LocalCacheConfigFileName:         &apiConfig.LocalCache,
 		config.LogConfigFileName:                &apiConfig.Log,
-		config.MinioConfigFileName:              &apiConfig.Minio,
+		config.RustFSConfigFileName:             &apiConfig.RustFS,
 		config.MongodbConfigFileName:            &apiConfig.Mongo,
 		config.NotificationFileName:             &apiConfig.Notification,
 		config.ServerAPICfgFileName:             &apiConfig.API,

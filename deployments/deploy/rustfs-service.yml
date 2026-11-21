@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rustfs-service
+spec:
+  selector:
+    app: rustfs
+  ports:
+    - name: rustfs
+      protocol: TCP
+      port: 10005 # External port for accessing RustFS S3 API
+      targetPort: 9000 # Container port for RustFS S3 API
+    - name: rustfs-console
+      protocol: TCP
+      port: 19090 # External port for accessing RustFS console
+      targetPort: 9001 # Container port for RustFS console
+  type: ClusterIP

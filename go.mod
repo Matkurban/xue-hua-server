@@ -26,7 +26,6 @@ require (
 	github.com/kelindar/bitmap v1.5.7
 	github.com/lestrrat-go/strftime v1.2.1
 	github.com/likexian/gokit v0.25.16
-	github.com/minio/minio-go/v7 v7.4.1
 	github.com/openimsdk/protocol v0.0.73-alpha.20
 	github.com/prometheus/client_golang v1.25.0
 	github.com/qiniu/go-sdk/v7 v7.32.0
@@ -94,7 +93,6 @@ require (
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/ebitengine/purego v0.11.2 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
@@ -146,14 +144,11 @@ require (
 	github.com/kelindar/simd v1.2.0 // indirect
 	github.com/klauspost/compress v1.20.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.2 // indirect
-	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/lithammer/shortuuid v3.0.0+incompatible // indirect
 	github.com/lufia/plan9stats v0.0.0-20261101121723-be84dd9509a0 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/minio/crc64nvme v1.1.1 // indirect
-	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
@@ -161,7 +156,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pandatix/go-abnf v0.5.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
-	github.com/philhofer/fwd v1.2.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.34 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -172,14 +166,13 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.65.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
-	github.com/rs/xid v1.6.0 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.9.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/tinylib/msgp v1.6.5 // indirect
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
 	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -189,7 +182,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.5 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.7.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.2 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.47.0 // indirect
@@ -219,7 +211,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261118221215-c8830f628b3f // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/ini.v1 v1.68.0 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
 	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab // indirect

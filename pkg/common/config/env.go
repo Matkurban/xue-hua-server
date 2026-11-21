@@ -9,7 +9,7 @@ func init() {
 	fileNames := []string{
 		FileName, NotificationFileName, ShareFileName, WebhooksConfigFileName,
 		KafkaConfigFileName, RedisConfigFileName,
-		MongodbConfigFileName, MinioConfigFileName, LogConfigFileName,
+		MongodbConfigFileName, RustFSConfigFileName, LogConfigFileName,
 		ServerAPICfgFileName, ServerCronTaskCfgFileName, ServerMsgGatewayCfgFileName,
 		ServerMsgTransferCfgFileName, ServerPushCfgFileName, ServerRPCAuthCfgFileName,
 		ServerRPCConversationCfgFileName, ServerRPCFriendCfgFileName, ServerRPCGroupCfgFileName,

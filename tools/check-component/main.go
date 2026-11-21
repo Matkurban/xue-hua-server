@@ -12,7 +12,7 @@ import (
 	"server/v3/pkg/common/storage/redisutil"
 	"server/v3/pkg/discovery/etcd"
 	"server/v3/pkg/common/mq/kafka"
-	"server/v3/pkg/common/s3/minio"
+	"server/v3/pkg/common/s3/rustfs"
 	"server/v3/pkg/common/program"
 	"server/v3/pkg/common/config"
 )
@@ -35,22 +35,22 @@ func CheckRedis(ctx context.Context, config *config.Redis) error {
 	return redisutil.Check(ctx, config.Build())
 }
 
-func CheckMinIO(ctx context.Context, config *config.Minio) error {
-	return minio.Check(ctx, config.Build())
+func CheckRustFS(ctx context.Context, config *config.RustFS) error {
+	return rustfs.Check(ctx, config.Build())
 }
 
 func CheckKafka(ctx context.Context, conf *config.Kafka) error {
 	return kafka.CheckHealth(ctx, conf.Build())
 }
 
-func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, *config.Minio, *config.Discovery, error) {
+func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, *config.RustFS, *config.Discovery, error) {
 	var (
-		mongoConfig = &config.Mongo{}
-		redisConfig = &config.Redis{}
-		kafkaConfig = &config.Kafka{}
-		minioConfig = &config.Minio{}
-		discovery   = &config.Discovery{}
-		thirdConfig = &config.Third{}
+		mongoConfig  = &config.Mongo{}
+		redisConfig  = &config.Redis{}
+		kafkaConfig  = &config.Kafka{}
+		rustfsConfig = &config.RustFS{}
+		discovery    = &config.Discovery{}
+		thirdConfig  = &config.Third{}
 	)
 
 	err := config.Load(configDir, config.MongodbConfigFileName, config.EnvPrefixMap[config.MongodbConfigFileName], mongoConfig)
@@ -73,19 +73,19 @@ func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, 
 		return nil, nil, nil, nil, nil, err
 	}
 
-	if thirdConfig.Object.Enable == "minio" {
-		err = config.Load(configDir, config.MinioConfigFileName, config.EnvPrefixMap[config.MinioConfigFileName], minioConfig)
+	if thirdConfig.Object.Enable == "rustfs" {
+		err = config.Load(configDir, config.RustFSConfigFileName, config.EnvPrefixMap[config.RustFSConfigFileName], rustfsConfig)
 		if err != nil {
 			return nil, nil, nil, nil, nil, err
 		}
 	} else {
-		minioConfig = nil
+		rustfsConfig = nil
 	}
 	err = config.Load(configDir, config.DiscoveryConfigFilename, config.EnvPrefixMap[config.DiscoveryConfigFilename], discovery)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	return mongoConfig, redisConfig, kafkaConfig, minioConfig, discovery, nil
+	return mongoConfig, redisConfig, kafkaConfig, rustfsConfig, discovery, nil
 }
 
 func main() {
@@ -98,21 +98,19 @@ func main() {
 
 	fmt.Printf("%s Index: %d, Config Path: %s\n", filepath.Base(os.Args[0]), index, configDir)
 
-	mongoConfig, redisConfig, kafkaConfig, minioConfig, zookeeperConfig, err := initConfig(configDir)
+	mongoConfig, redisConfig, kafkaConfig, rustfsConfig, discoveryConfig, err := initConfig(configDir)
 	if err != nil {
 		program.ExitWithError(err)
 	}
 
 	ctx := context.Background()
-	err = performChecks(ctx, mongoConfig, redisConfig, kafkaConfig, minioConfig, zookeeperConfig, maxRetry)
+	err = performChecks(ctx, mongoConfig, redisConfig, kafkaConfig, rustfsConfig, discoveryConfig, maxRetry)
 	if err != nil {
-		// Assume program.ExitWithError logs the error and exits.
-		// Replace with your error handling logic as necessary.
 		program.ExitWithError(err)
 	}
 }
 
-func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *config.Redis, kafkaConfig *config.Kafka, minioConfig *config.Minio, discovery *config.Discovery, maxRetry int) error {
+func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *config.Redis, kafkaConfig *config.Kafka, rustfsConfig *config.RustFS, discovery *config.Discovery, maxRetry int) error {
 	checksDone := make(map[string]bool)
 
 	checks := map[string]func(ctx context.Context) error{
@@ -126,9 +124,9 @@ func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *
 			return CheckKafka(ctx, kafkaConfig)
 		},
 	}
-	if minioConfig != nil {
-		checks["MinIO"] = func(ctx context.Context) error {
-			return CheckMinIO(ctx, minioConfig)
+	if rustfsConfig != nil {
+		checks["RustFS"] = func(ctx context.Context) error {
+			return CheckRustFS(ctx, rustfsConfig)
 		}
 	}
 	if discovery.Enable == "etcd" {

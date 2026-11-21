@@ -56,11 +56,11 @@ Container `localhost` is not the host: configure dependency endpoints accordingl
 ## Infrastructure and LiveKit
 
 `docker-compose.yml` runs the infrastructure shared by this server and
-[xue-hua-chat](../xue-hua-chat): MongoDB, Redis, etcd, Kafka, MinIO and the
+[xue-hua-chat](../xue-hua-chat): MongoDB, Redis, etcd, Kafka, RustFS and the
 LiveKit SFU used for calls and meetings.
 
 ```sh
-docker compose up -d                                   # mongo, redis, etcd, kafka, minio, livekit
+docker compose up -d                                   # mongo, redis, etcd, kafka, rustfs, livekit
 docker compose --profile livekit-extras up -d          # + livekit-egress (recording), livekit-ingress (RTMP/WHIP)
 docker compose --profile caddy up -d                   # + caddy TLS front on :443 for livekit + TURN
 ```
