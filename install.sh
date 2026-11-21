@@ -51,8 +51,8 @@ services = (
     "rpc-conversation", "rpc-third", "msggateway", "msgtransfer", "push", "crontask", "cmdutils",
 )
 required = [
-    "start-config.yml", "magefile.go", "magefile_unix.go", "mage_pack.go",
-    "go.mod", "go.sum", "version/version.go", "LICENSE", "mage",
+    "start-config.yml", "Makefile", "scripts/manage.sh",
+    "version/version.go", "LICENSE",
 ] + [f"_output/bin/platforms/linux/amd64/server-{name}" for name in services]
 required += [f"_output/bin/tools/linux/amd64/{name}" for name in ("check-component", "check-free-memory", "seq")]
 required += [f"config/server-{name}.yml" for name in services if name != "cmdutils"]
@@ -76,8 +76,6 @@ try:
         for path in source.rglob("*"):
             if path.is_symlink() or not (path.is_file() or path.is_dir()):
                 raise ValueError(f"unsupported release entry: {path.relative_to(source)}")
-        if "module server/v3" not in (source / "go.mod").read_text():
-            raise ValueError("release module must be server/v3")
         destination.mkdir(mode=0o700, parents=True, exist_ok=False)
         created = True
         shutil.copytree(source, destination, dirs_exist_ok=True)
@@ -96,13 +94,11 @@ try:
             missing = [name for name in required if name not in names or archive.getinfo(name).is_dir()]
             if missing:
                 raise ValueError("missing required release files: " + ", ".join(missing))
-            if "module server/v3" not in archive.read("go.mod").decode():
-                raise ValueError("release module must be server/v3")
             destination.mkdir(mode=0o700, parents=True, exist_ok=False)
             created = True
             archive.extractall(destination)
     destination.chmod(0o700)
-    launcher = destination / "mage"
+    launcher = destination / "scripts/manage.sh"
     launcher.chmod(launcher.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     for path in (destination / "_output/bin").rglob("*"):
         if path.is_file():
@@ -115,4 +111,4 @@ print(f"Installed local release to {destination}")
 PY
 
 echo "Review config/ and start the required infrastructure before starting."
-echo "On Linux/amd64: cd \"$destination\" && ./mage start"
+echo "On Linux/amd64: cd \"$destination\" && make start (or ./scripts/manage.sh start)"

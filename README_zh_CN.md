@@ -3,19 +3,29 @@
 ## 本机编译
 
 ```shell
-mage
+make
+```
+
+## 编译指定目标
+
+```shell
+make build-only TARGETS="server-api seq"
 ```
 
 ## 编译特定平台
-以下是编译为`linux_amd64`平台的命令，如果需要编译其他平台的替换此属性就可以
+
+以下是编译为 `linux_amd64` 平台的命令，如果需要编译其他平台替换 `PLATFORMS` 即可：
+
 ```shell
-CGO_ENABLED=0 PLATFORMS=linux_amd64 mage
+CGO_ENABLED=0 PLATFORMS=linux_amd64 make
 ```
 
 ## 打包
-把 Linux 平台的二进制打包成二进制，上传到服务器后就可以直接解压使用的
+
+把 Linux 平台的二进制和运行脚本打包成压缩包，上传到服务器后直接解压使用（无需安装 Go）：
+
 ```shell
-mage pack
+make pack
 ```
 
 ## 运行容器
@@ -27,37 +37,25 @@ docker compose up -d
 ## 运行
 
 ```shell
-mage start
+make start
 ```
 
-## 二进制运行
+或直接运行脚本（无 make 环境时）：
 
 ```shell
-./mage start
-```
-
-## 长期运行
-
-```shell
-nohup ./mage start >> _output/logs/server.log 2>&1 &
+./scripts/manage.sh start
 ```
 
 ## 检查
 
 ```shell
-mage check
-```
-
-## 二进制检查
-
-```shell
-./mage check
+make check
 ```
 
 ## 停止
 
 ```shell
-mage stop
+make stop
 ```
 
 ## 停止容器
@@ -66,8 +64,8 @@ mage stop
 docker compose down
 ```
 
-## 二进制停止
+## 单元测试
 
 ```shell
-./mage stop
+make test
 ```

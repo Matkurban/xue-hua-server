@@ -7,36 +7,36 @@ this repository does not contain the external points ledger or client applicatio
 
 ## Build and run
 
-Requires Go **1.26.0+** and [Mage](https://magefile.org/).
+Requires Go **1.26.0+** and GNU `make` (or bash via `./scripts/manage.sh`).
 
 ```sh
-mage
+make
 # Optional targeted build:
-mage buildOnly "server-api seq"
+make build-only TARGETS="server-api seq"
 # Configure infrastructure and review config/*.yml before starting.
-mage start
-mage check
-mage stop
+make start
+make check
+make stop
 
-CGO_ENABLED=0 PLATFORMS=linux_amd64 mage
-mage pack
+CGO_ENABLED=0 PLATFORMS=linux_amd64 make
+make pack
 # _output/server-linux-amd64.zip
 ./install.sh _output/server-linux-amd64.zip ./server-release
 # On the Linux/amd64 deployment host, after configuring infrastructure:
 cd server-release
-./mage start
-./mage check
-./mage stop
+make start   # or ./scripts/manage.sh start
+make check   # or ./scripts/manage.sh check
+make stop    # or ./scripts/manage.sh stop
 ```
 
 The installer accepts a local release ZIP or extracted release directory and a
 new destination. It does not download upstream sources, install system packages,
 overwrite an existing installation, change credentials, or start services.
-The Linux/amd64 release includes binaries, config, a compiled `mage` launcher,
-Mage runtime files and module metadata; it is **not** a source archive.
-Use `./mage start`, `./mage stop` and `./mage check` inside the extracted release:
-the launcher needs neither Go nor remote Go dependencies on the deployment host.
-Source-checkout commands use installed Mage; `mage export` also packages the release.
+The Linux/amd64 release includes binaries, config, `Makefile`, and `scripts/manage.sh`;
+it is **not** a source archive.
+Use `make start`, `make stop` and `make check` (or `./scripts/manage.sh ...`) inside the extracted release:
+the runtime scripts need neither Go nor remote Go dependencies on the deployment host.
+`make export` and `make zip` are aliases for `make pack`.
 
 ## Containers
 
