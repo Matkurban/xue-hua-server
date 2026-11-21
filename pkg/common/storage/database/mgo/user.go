@@ -7,7 +7,7 @@ import (
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"github.com/openimsdk/protocol/user"

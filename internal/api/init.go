@@ -40,8 +40,9 @@ func Start(ctx context.Context, config *Config, client discovery.SvcDiscoveryReg
 	done := make(chan struct{})
 	go func() {
 		httpServer := &http.Server{
-			Handler: router,
-			Addr:    net.JoinHostPort(network.GetListenIP(config.API.Api.ListenIP), strconv.Itoa(apiPort)),
+			Handler:           router,
+			Addr:              net.JoinHostPort(network.GetListenIP(config.API.Api.ListenIP), strconv.Itoa(apiPort)),
+			ReadHeaderTimeout: 10 * time.Second,
 		}
 		go func() {
 			defer close(done)

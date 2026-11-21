@@ -73,22 +73,17 @@ func (g *Client) Push(ctx context.Context, userIDs []string, title, content stri
 		maxNum := 999
 		if len(userIDs) > maxNum {
 			s := splitter.NewSplitter(maxNum, userIDs)
+			chunks := s.GetSplitResult()
 			wg := sync.WaitGroup{}
-			wg.Add(len(s.GetSplitResult()))
-			for i, v := range s.GetSplitResult() {
-				go func(index int, userIDs []string) {
+			sem := make(chan struct{}, 8)
+			for i, v := range chunks {
+				wg.Add(1)
+				sem <- struct{}{}
+				go func(index int, batch []string) {
 					defer wg.Done()
-					for i := 0; i < len(userIDs); i += maxNum {
-						end := i + maxNum
-						if end > len(userIDs) {
-							end = len(userIDs)
-						}
-						if err = g.batchPush(ctx, token, userIDs[i:end], pushReq); err != nil {
-							log.ZError(ctx, "batchPush failed", err, "index", index, "token", token, "req", pushReq)
-						}
-					}
-					if err = g.batchPush(ctx, token, userIDs, pushReq); err != nil {
-						log.ZError(ctx, "batchPush failed", err, "index", index, "token", token, "req", pushReq)
+					defer func() { <-sem }()
+					if pushErr := g.batchPush(ctx, token, batch, pushReq); pushErr != nil {
+						log.ZError(ctx, "batchPush failed", pushErr, "index", index, "req", pushReq)
 					}
 				}(i, v.Item)
 			}
@@ -201,5 +196,5 @@ func (g *Client) GetTaskIDAndSave2Redis(ctx context.Context, token string, pushR
 	if err != nil {
 		return
 	}
-	return token, nil
+	return taskID, nil
 }

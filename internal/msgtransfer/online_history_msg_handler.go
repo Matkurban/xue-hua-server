@@ -4,17 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-
-	"gitee.com/matkurban/openimsdk-tools/mq"
-
+	"strings"
 	"sync"
 	"time"
 
 	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"server/v3/pkg/rpcli"
-
-	"github.com/go-redis/redis"
+	"gitee.com/matkurban/openimsdk-tools/mq"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
+	"server/v3/pkg/rpcli"
 
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"gitee.com/matkurban/openimsdk-tools/log"
@@ -112,6 +110,9 @@ func NewOnlineHistoryRedisConsumerHandler(ctx context.Context, client discovery.
 func (och *OnlineHistoryRedisConsumerHandler) do(ctx context.Context, channelID int, val *batcher.Msg[ConsumerMessage]) {
 	ctx = mcontext.WithTriggerIDContext(ctx, val.TriggerID())
 	ctxMessages := och.parseConsumerMessages(ctx, val.Val())
+	if len(ctxMessages) == 0 {
+		return
+	}
 	ctx = withAggregationCtx(ctx, ctxMessages)
 	log.ZInfo(ctx, "msg arrived channel", "channel id", channelID, "msgList length", len(ctxMessages), "key", val.Key())
 	och.doSetReadSeq(ctx, ctxMessages)
@@ -369,17 +370,16 @@ func (och *OnlineHistoryRedisConsumerHandler) toPushTopic(ctx context.Context, k
 }
 
 func withAggregationCtx(ctx context.Context, values []*ContextMsg) context.Context {
-	var allMessageOperationID string
-	for i, v := range values {
+	var sb strings.Builder
+	for _, v := range values {
 		if opid := mcontext.GetOperationID(v.ctx); opid != "" {
-			if i == 0 {
-				allMessageOperationID += opid
-			} else {
-				allMessageOperationID += "$" + opid
+			if sb.Len() > 0 {
+				sb.WriteByte('$')
 			}
+			sb.WriteString(opid)
 		}
 	}
-	return mcontext.SetOperationID(ctx, allMessageOperationID)
+	return mcontext.SetOperationID(ctx, sb.String())
 }
 
 func (och *OnlineHistoryRedisConsumerHandler) HandlerRedisMessage(msg mq.Message) error { // a instance in the consumer group

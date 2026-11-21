@@ -3,7 +3,7 @@ package dbbuild
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 )

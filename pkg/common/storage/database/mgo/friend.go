@@ -7,7 +7,7 @@ import (
 	"server/v3/pkg/common/storage/model"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"

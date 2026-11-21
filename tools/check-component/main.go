@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
 	"gitee.com/matkurban/openimsdk-tools/discovery/etcd"
 	"gitee.com/matkurban/openimsdk-tools/mq/kafka"

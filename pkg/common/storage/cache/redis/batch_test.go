@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/database/mgo"

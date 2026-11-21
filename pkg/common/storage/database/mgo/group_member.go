@@ -2,12 +2,13 @@ package mgo
 
 import (
 	"context"
+	"regexp"
 
 	"gitee.com/matkurban/openimsdk-tools/log"
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"github.com/openimsdk/protocol/constant"
@@ -174,11 +175,12 @@ func (g *GroupMemberMgo) FindRoleLevelUserIDs(ctx context.Context, groupID strin
 }
 
 func (g *GroupMemberMgo) SearchMember(ctx context.Context, keyword string, groupID string, pagination pagination.Pagination) (int64, []*model.GroupMember, error) {
+	quoted := regexp.QuoteMeta(keyword)
 	filter := bson.M{
 		"group_id": groupID,
 		"$or": []bson.M{
-			{"nickname": bson.M{"$regex": keyword}},
-			{"user_id": bson.M{"$regex": keyword}},
+			{"nickname": bson.M{"$regex": quoted}},
+			{"user_id": bson.M{"$regex": quoted}},
 		},
 	}
 	return mongoutil.FindPage[*model.GroupMember](ctx, g.coll, filter, pagination, options.Find().SetSort(g.memberSort()))

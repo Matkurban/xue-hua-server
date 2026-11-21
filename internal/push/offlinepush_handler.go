@@ -78,7 +78,11 @@ func (o *OfflinePushConsumerHandler) getOfflinePushInfos(msg *sdkws.MsgData) (ti
 			title = constant.ContentType2PushContent[int64(msg.ContentType)]
 		case constant.AtText:
 			ac := AtTextElem{}
-			_ = jsonutil.JsonStringToStruct(string(msg.Content), &ac)
+			if err := jsonutil.JsonStringToStruct(string(msg.Content), &ac); err == nil && ac.Text != "" {
+				title = ac.Text
+			} else {
+				title = constant.ContentType2PushContent[constant.Common]
+			}
 		case constant.SignalingNotification:
 			title = constant.ContentType2PushContent[constant.SignalMsg]
 		default:

@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
 	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"

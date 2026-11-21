@@ -1,9 +1,12 @@
 package msggateway
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"slices"
 	"sync"
+	"sync/atomic"
 	"time"
+
+	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
 )
 
 type UserMap interface {
@@ -23,8 +26,20 @@ type UserState struct {
 }
 
 type UserPlatform struct {
-	Time    time.Time
-	Clients []*Client
+	timeNano atomic.Int64
+	Clients  []*Client
+}
+
+func (u *UserPlatform) SetTime(t time.Time) {
+	u.timeNano.Store(t.UnixNano())
+}
+
+func (u *UserPlatform) Time() time.Time {
+	ns := u.timeNano.Load()
+	if ns == 0 {
+		return time.Time{}
+	}
+	return time.Unix(0, ns)
 }
 
 func (u *UserPlatform) PlatformIDs() []int32 {
@@ -42,7 +57,7 @@ func (u *UserPlatform) PlatformIDSet() map[int32]struct{} {
 	if len(u.Clients) == 0 {
 		return nil
 	}
-	platformIDs := make(map[int32]struct{})
+	platformIDs := make(map[int32]struct{}, len(u.Clients))
 	for _, client := range u.Clients {
 		platformIDs[int32(client.PlatformID)] = struct{}{}
 	}
@@ -83,7 +98,7 @@ func (u *userMap) RecvSubChange(userID string, platformIDs []int32) bool {
 func (u *userMap) push(userID string, userPlatform *UserPlatform, offline []int32) bool {
 	select {
 	case u.ch <- UserState{UserID: userID, Online: userPlatform.PlatformIDs(), Offline: offline}:
-		userPlatform.Time = time.Now()
+		userPlatform.SetTime(time.Now())
 		return true
 	default:
 		return false
@@ -97,7 +112,7 @@ func (u *userMap) GetAll(userID string) ([]*Client, bool) {
 	if !ok {
 		return nil, false
 	}
-	return result.Clients, true
+	return slices.Clone(result.Clients), true
 }
 
 func (u *userMap) Get(userID string, platformID int) ([]*Client, bool, bool) {
@@ -167,10 +182,10 @@ func (u *userMap) GetAllUserStatus(deadline time.Time, nowtime time.Time) (resul
 	defer u.lock.RUnlock()
 	result = make([]UserState, 0, len(u.data))
 	for userID, userPlatform := range u.data {
-		if deadline.Before(userPlatform.Time) {
+		if deadline.Before(userPlatform.Time()) {
 			continue
 		}
-		userPlatform.Time = nowtime
+		userPlatform.SetTime(nowtime)
 		online := make([]int32, 0, len(userPlatform.Clients))
 		for _, client := range userPlatform.Clients {
 			online = append(online, int32(client.PlatformID))

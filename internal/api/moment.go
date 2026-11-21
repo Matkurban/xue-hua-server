@@ -171,6 +171,10 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
+	if len(moments) == 0 {
+		apiresp.GinSuccess(c, &ListMomentsResp{Total: total, Moments: []*model.MomentWithInteractions{}})
+		return
+	}
 
 	// Collect moment IDs
 	momentIDs := make([]string, len(moments))
@@ -296,6 +300,10 @@ func (m *MomentApi) CommentMoment(c *gin.Context) {
 	}
 	if err := authverify.CheckAccess(c, req.UserID); err != nil {
 		apiresp.GinError(c, err)
+		return
+	}
+	if strings.TrimSpace(req.Content) == "" {
+		apiresp.GinError(c, errs.ErrArgs.WithDetail("content is empty").Wrap())
 		return
 	}
 	comment, err := m.momentDB.CommentMoment(c, req.UserID, req.MomentID, req.ReplyToUserID, req.Content)

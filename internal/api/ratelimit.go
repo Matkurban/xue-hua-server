@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -47,13 +46,11 @@ func RateLimitMiddleware(config *RateLimiter) gin.HandlerFunc {
 
 		done, err := limiter.Allow()
 		if err != nil {
-
 			c.Header("X-RateLimit-Policy", "BBR")
-			c.Header("Retry-After", calculateBBRRetryAfter(status))
+			c.Header("Retry-After", calculateBBRRetryAfter(status, config.CPUThreshold))
 			c.Header("X-RateLimit-Limit", strconv.FormatInt(status.MaxInFlight, 10))
 			c.Header("X-RateLimit-Remaining", "0") // There is no concept of remaining quota in BBR.
 
-			fmt.Println("rate limited:", err, "path:", c.Request.URL.Path)
 			log.ZWarn(c, "rate limited", err, "path", c.Request.URL.Path)
 			c.AbortWithStatus(http.StatusTooManyRequests)
 			apiresp.GinError(c, errs.NewCodeError(http.StatusTooManyRequests, "too many requests, please try again later"))
@@ -65,10 +62,13 @@ func RateLimitMiddleware(config *RateLimiter) gin.HandlerFunc {
 	}
 }
 
-func calculateBBRRetryAfter(status bbr.Stat) string {
-	loadRatio := float64(status.CPU) / float64(status.CPU)
-
-	if loadRatio < 0.8 {
+func calculateBBRRetryAfter(status bbr.Stat, cpuThreshold int64) string {
+	denom := float64(cpuThreshold)
+	if denom <= 0 {
+		denom = 1000.0
+	}
+	loadRatio := float64(status.CPU) / denom
+	if math.IsNaN(loadRatio) || math.IsInf(loadRatio, 0) || loadRatio < 0.8 {
 		return "1"
 	}
 	if loadRatio < 0.95 {
@@ -76,6 +76,9 @@ func calculateBBRRetryAfter(status bbr.Stat) string {
 	}
 
 	backoff := 1 + int64(math.Pow(loadRatio-0.95, 2)*50)
+	if backoff < 1 {
+		backoff = 1
+	}
 	if backoff > 5 {
 		backoff = 5
 	}

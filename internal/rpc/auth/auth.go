@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 
 	"server/v3/pkg/common/convert"
@@ -101,7 +102,7 @@ func Start(ctx context.Context, config *Config, client discovery.SvcDiscoveryReg
 
 func (s *authServer) GetAdminToken(ctx context.Context, req *pbauth.GetAdminTokenReq) (*pbauth.GetAdminTokenResp, error) {
 	resp := pbauth.GetAdminTokenResp{}
-	if req.Secret != s.config.Share.Secret {
+	if subtle.ConstantTimeCompare([]byte(req.Secret), []byte(s.config.Share.Secret)) != 1 {
 		return nil, errs.ErrNoPermission.WrapMsg("secret invalid")
 	}
 
@@ -249,13 +250,12 @@ func (s *authServer) forceKickOff(ctx context.Context, userID string, platformID
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return err
 	}
-	for k := range m {
-		m[k] = constant.KickedToken
-		log.ZDebug(ctx, "set token map is ", "token map", m, "userID",
-			userID, "token", k)
-
-		err = s.authDatabase.SetTokenMapByUidPid(ctx, userID, int(platformID), m)
-		if err != nil {
+	if len(m) > 0 {
+		for k := range m {
+			m[k] = constant.KickedToken
+		}
+		log.ZDebug(ctx, "set token map is ", "token map", m, "userID", userID)
+		if err = s.authDatabase.SetTokenMapByUidPid(ctx, userID, int(platformID), m); err != nil {
 			return err
 		}
 	}

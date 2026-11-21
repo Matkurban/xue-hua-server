@@ -2,11 +2,12 @@ package mgo
 
 import (
 	"context"
+	"regexp"
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/pagination"
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"github.com/openimsdk/protocol/constant"
@@ -66,7 +67,7 @@ func (g *GroupMgo) Search(ctx context.Context, keyword string, pagination pagina
 
 	// Perform the search with pagination and sorting
 	return mongoutil.FindPage[*model.Group](ctx, g.coll, bson.M{
-		"group_name": bson.M{"$regex": keyword},
+		"group_name": bson.M{"$regex": regexp.QuoteMeta(keyword)},
 		"status":     bson.M{"$ne": constant.GroupStatusDismissed},
 	}, pagination, opts)
 }
@@ -142,7 +143,7 @@ func (g *GroupMgo) SearchJoin(ctx context.Context, groupIDs []string, keyword st
 		"status":   bson.M{"$ne": constant.GroupStatusDismissed},
 	}
 	if keyword != "" {
-		filter["group_name"] = bson.M{"$regex": keyword}
+		filter["group_name"] = bson.M{"$regex": regexp.QuoteMeta(keyword)}
 	}
 	// Define the sorting options
 	opts := options.Find().SetSort(g.sortGroup())

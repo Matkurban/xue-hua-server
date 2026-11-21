@@ -189,8 +189,13 @@ func (ws *WsServer) Run(ctx context.Context) error {
 
 	done := make(chan struct{})
 	go func() {
-		wsServer := http.Server{Addr: fmt.Sprintf(":%d", ws.port), Handler: nil}
-		http.HandleFunc("/", ws.wsHandler)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", ws.wsHandler)
+		wsServer := http.Server{
+			Addr:              fmt.Sprintf(":%d", ws.port),
+			Handler:           mux,
+			ReadHeaderTimeout: 10 * time.Second,
+		}
 		go func() {
 			defer close(done)
 			<-ctx.Done()
@@ -529,6 +534,7 @@ func (ws *WsServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	if connContext.ShouldSendResp() {
 		if err := conn.WriteMessage(websocket.TextMessage, wsSuccessResponse); err != nil {
 			log.ZWarn(connContext, "WriteMessage first response", err)
+			_ = conn.Close()
 			return
 		}
 	}
@@ -540,7 +546,7 @@ func (ws *WsServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 		pingInterval = pingPeriod
 	}
 
-	client := new(Client)
+	client := ws.clientPool.Get().(*Client)
 	client.ResetClient(connContext, NewWebSocketClientConn(conn, maxMessageSize, pongWait, pingInterval), ws)
 
 	// Register the client with the server and start message processing

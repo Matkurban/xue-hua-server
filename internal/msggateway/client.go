@@ -57,7 +57,6 @@ func (c *Client) ResetClient(ctx *UserConnContext, conn ClientConn, longConnServ
 	c.UserID = ctx.GetUserID()
 	c.ctx = ctx
 	c.longConnServer = longConnServer
-	c.IsBackground = false
 	c.closed.Store(false)
 	c.closedErr = nil
 	c.token = ctx.GetToken()
@@ -67,13 +66,14 @@ func (c *Client) ResetClient(ctx *UserConnContext, conn ClientConn, longConnServ
 	c.subLock = new(sync.Mutex)
 	if c.subUserIDs != nil {
 		clear(c.subUserIDs)
+	} else {
+		c.subUserIDs = make(map[string]struct{})
 	}
 	if c.SDKType == GoSDK {
 		c.Encoder = NewGobEncoder()
 	} else {
 		c.Encoder = NewJsonEncoder()
 	}
-	c.subUserIDs = make(map[string]struct{})
 }
 
 // readMessage continuously reads messages from the connection.
@@ -281,6 +281,9 @@ func (c *Client) writeBinaryMsg(resp Resp) error {
 
 	c.w.Lock()
 	defer c.w.Unlock()
+	if c.closed.Load() {
+		return nil
+	}
 
 	if c.IsCompress {
 		resultBuf, compressErr := c.longConnServer.CompressWithPool(encodedBuf)

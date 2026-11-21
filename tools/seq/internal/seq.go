@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/db/mongoutil"
+	"server/v3/pkg/common/storage/mongoutil"
 	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
 	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
 	"github.com/go-viper/mapstructure/v2"

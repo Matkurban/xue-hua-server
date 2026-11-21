@@ -122,7 +122,8 @@ func (d *DefaultAllNode) GetConnsAndOnlinePush(ctx context.Context, msg *sdkws.M
 func (d *DefaultAllNode) GetOnlinePushFailedUserIDs(_ context.Context, msg *sdkws.MsgData,
 	wsResults []*msggateway.SingleMsgToUserResults, pushToUserIDs *[]string) []string {
 
-	onlineSuccessUserIDs := []string{msg.SendID}
+	onlineSuccessUserIDs := make([]string, 1, len(wsResults)+1)
+	onlineSuccessUserIDs[0] = msg.SendID
 	for _, v := range wsResults {
 		//message sender do not need offline push
 		if msg.SendID == v.UserID {
@@ -166,9 +167,13 @@ func (k *K8sStaticConsistentHash) GetConnsAndOnlinePush(ctx context.Context, msg
 		}
 	}
 	log.ZDebug(ctx, "genUsers send hosts struct:", "usersHost", usersHost)
-	var usersConns = make(map[grpc.ClientConnInterface][]string)
+	var usersConns = make(map[grpc.ClientConnInterface][]string, len(usersHost))
 	for host, userIds := range usersHost {
-		tconn, _ := k.disCov.GetConn(ctx, host)
+		tconn, err := k.disCov.GetConn(ctx, host)
+		if err != nil || tconn == nil {
+			log.ZError(ctx, "get msg gateway conn error", err, "host", host)
+			continue
+		}
 		usersConns[tconn] = userIds
 	}
 	var (
