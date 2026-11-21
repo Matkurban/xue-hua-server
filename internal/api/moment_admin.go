@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/common/errs"
 	"github.com/gin-gonic/gin"
 	"server/v3/pkg/authverify"
 	"server/v3/pkg/common/storage/controller"

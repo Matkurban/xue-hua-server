@@ -18,14 +18,14 @@ import (
 	"context"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"server/v3/pkg/common/storage/pagination"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 )
 
 func NewClientConfig(db *mongo.Database) (database.ClientConfig, error) {

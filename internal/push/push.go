@@ -2,13 +2,13 @@ package push
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/mq"
+	"server/v3/pkg/common/mq"
 	"math/rand"
 	"strconv"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
 	pbpush "github.com/openimsdk/protocol/push"
 	"google.golang.org/grpc"
 	"server/v3/internal/push/offlinepush"

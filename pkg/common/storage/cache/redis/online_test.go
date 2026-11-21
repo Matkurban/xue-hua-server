@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
+	"server/v3/pkg/common/storage/redisutil"
 	"server/v3/pkg/common/config"
 	"testing"
 	"time"

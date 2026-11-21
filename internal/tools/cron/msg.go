@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
 	"github.com/openimsdk/protocol/msg"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"gitee.com/matkurban/openimsdk-tools/mq"
-	"gitee.com/matkurban/openimsdk-tools/mq/kafka"
-	"gitee.com/matkurban/openimsdk-tools/mq/simmq"
+	"server/v3/pkg/common/mq"
+	"server/v3/pkg/common/mq/kafka"
+	"server/v3/pkg/common/mq/simmq"
 	"server/v3/pkg/common/config"
 )
 

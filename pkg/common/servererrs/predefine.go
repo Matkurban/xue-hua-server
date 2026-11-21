@@ -1,6 +1,6 @@
 package servererrs
 
-import "gitee.com/matkurban/openimsdk-tools/errs"
+import "server/v3/pkg/common/errs"
 
 var (
 	ErrNetwork = errs.NewCodeError(NetworkError, "NetworkError")

@@ -9,8 +9,8 @@ import (
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/s3"
-	"gitee.com/matkurban/openimsdk-tools/s3/cont"
+	"server/v3/pkg/common/s3"
+	"server/v3/pkg/common/s3/cont"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/storage/cache"
 )

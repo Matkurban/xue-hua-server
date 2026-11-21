@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"server/v3/pkg/apistruct"

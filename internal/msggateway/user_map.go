@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 )
 
 type UserMap interface {

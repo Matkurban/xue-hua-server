@@ -2,7 +2,7 @@ package rpcli
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"google.golang.org/grpc"
 )
 

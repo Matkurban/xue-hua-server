@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/s3/minio"
+	"server/v3/pkg/common/s3/minio"
 	"server/v3/pkg/common/storage/cache/cachekey"
 	"server/v3/pkg/common/storage/database"
 )

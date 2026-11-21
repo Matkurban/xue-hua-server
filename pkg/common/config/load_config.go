@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/runtimeenv"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 )

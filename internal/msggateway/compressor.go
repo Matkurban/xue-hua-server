@@ -6,7 +6,7 @@ import (
 	"io"
 	"sync"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 )
 
 var (

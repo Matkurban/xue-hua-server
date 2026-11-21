@@ -3,7 +3,7 @@ package msg
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/mcontext"
 	"github.com/openimsdk/protocol/constant"
 	pbmsg "github.com/openimsdk/protocol/msg"
 )

@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"server/v3/pkg/common/storage/pagination"
 )
 
 func NewFriendRequestMongo(db *mongo.Database) (database.FriendRequest, error) {

@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/network"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/network"
+	"server/v3/pkg/util/runtimeenv"
 	"google.golang.org/grpc"
 	conf "server/v3/pkg/common/config"
 )

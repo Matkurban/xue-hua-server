@@ -1,8 +1,8 @@
 package msggateway
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/common/log"
 )
 
 func httpError(ctx *UserConnContext, err error) {

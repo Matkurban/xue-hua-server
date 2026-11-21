@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"

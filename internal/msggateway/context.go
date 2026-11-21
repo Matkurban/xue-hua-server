@@ -10,8 +10,8 @@ import (
 
 	"server/v3/pkg/common/servererrs"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/encrypt"
-	"gitee.com/matkurban/openimsdk-tools/utils/timeutil"
+	"server/v3/pkg/util/encrypt"
+	"server/v3/pkg/util/timeutil"
 	"github.com/openimsdk/protocol/constant"
 )
 

@@ -16,13 +16,13 @@ package rpccache
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/group"
 	"server/v3/pkg/common/storage/cache/cachekey"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	"github.com/openimsdk/protocol/sdkws"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"

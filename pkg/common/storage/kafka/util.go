@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"errors"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/mcontext"
 	"github.com/IBM/sarama"
 	"github.com/openimsdk/protocol/constant"
 )

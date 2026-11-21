@@ -9,12 +9,12 @@ import (
 	"server/v3/pkg/common/storage/database/mgo"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
-	"gitee.com/matkurban/openimsdk-tools/db/tx"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/storage/pagination"
+	"server/v3/pkg/common/storage/tx"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/common/storage/cache"
 )

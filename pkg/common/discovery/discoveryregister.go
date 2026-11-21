@@ -3,16 +3,16 @@ package discovery
 import (
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/discovery/standalone"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/discovery/standalone"
+	"server/v3/pkg/util/runtimeenv"
 	"google.golang.org/grpc"
 	"server/v3/pkg/common/config"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery/kubernetes"
+	"server/v3/pkg/discovery/kubernetes"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery/etcd"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/discovery/etcd"
+	"server/v3/pkg/common/errs"
 )
 
 // NewDiscoveryRegister creates a new service discovery and registry client based on the provided environment type.

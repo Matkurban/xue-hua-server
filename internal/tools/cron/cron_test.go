@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/mw"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/common/mw"
 	pbconversation "github.com/openimsdk/protocol/conversation"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/third"

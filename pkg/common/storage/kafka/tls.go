@@ -20,7 +20,7 @@ import (
 	"encoding/pem"
 	"os"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 )
 
 // decryptPEM decrypts a PEM block using a password.

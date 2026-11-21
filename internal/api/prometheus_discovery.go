@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/errs"
 	"github.com/gin-gonic/gin"
 	"server/v3/pkg/common/prommetrics"
 )

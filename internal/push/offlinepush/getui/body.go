@@ -3,7 +3,7 @@ package getui
 import (
 	"fmt"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"server/v3/pkg/common/config"
 )
 

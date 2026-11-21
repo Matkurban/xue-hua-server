@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"github.com/IBM/sarama"
 )
 

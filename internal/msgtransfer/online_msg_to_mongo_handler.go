@@ -1,9 +1,9 @@
 package msgtransfer
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/mq"
+	"server/v3/pkg/common/mq"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	pbmsg "github.com/openimsdk/protocol/msg"
 	"google.golang.org/protobuf/proto"
 	"server/v3/pkg/common/prommetrics"

@@ -3,14 +3,14 @@ package controller
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/mq"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/mq"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	"google.golang.org/protobuf/proto"
 	"server/v3/pkg/common/convert"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	pbmsg "github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"
 	"go.mongodb.org/mongo-driver/v2/mongo"

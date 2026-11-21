@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/cache"

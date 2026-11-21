@@ -1,7 +1,7 @@
 package mgo
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 

@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/datautil"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/storage/cache"
 	"server/v3/pkg/common/storage/cache/cachekey"

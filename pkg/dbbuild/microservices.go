@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
+	"server/v3/pkg/common/storage/redisutil"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 )

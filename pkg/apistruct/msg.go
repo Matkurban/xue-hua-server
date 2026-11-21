@@ -1,7 +1,7 @@
 package apistruct
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"github.com/openimsdk/protocol/sdkws"
 )
 

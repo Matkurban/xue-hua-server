@@ -3,7 +3,7 @@ package conversation
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"server/v3/pkg/callbackstruct"
 	"server/v3/pkg/common/config"
 	dbModel "server/v3/pkg/common/storage/model"

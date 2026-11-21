@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"server/v3/pkg/common/storage/database"
 )
 

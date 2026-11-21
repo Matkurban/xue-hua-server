@@ -2,10 +2,10 @@ package jssdk
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/a2r"
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/checker"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/a2r"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/common/checker"
+	"server/v3/pkg/common/errs"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"

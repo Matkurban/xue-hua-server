@@ -2,8 +2,8 @@ package rpcli
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/sdkws"
 	"github.com/openimsdk/protocol/user"
 	"google.golang.org/grpc"

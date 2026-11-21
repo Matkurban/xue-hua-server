@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"

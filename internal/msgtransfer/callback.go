@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/stringutil"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/stringutil"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/sdkws"
 	"google.golang.org/protobuf/proto"

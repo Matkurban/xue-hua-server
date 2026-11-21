@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	"server/v3/pkg/common/storage/cache"
 	"server/v3/pkg/common/storage/cache/cachekey"
 	"server/v3/pkg/common/storage/database"

@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/field"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/field"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/msgprocessor"
 )

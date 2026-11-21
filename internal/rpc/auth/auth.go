@@ -14,14 +14,14 @@ import (
 	"server/v3/pkg/rpccache"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 	redis2 "server/v3/pkg/common/storage/cache/redis"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	pbauth "github.com/openimsdk/protocol/auth"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msggateway"

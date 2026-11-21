@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"server/v3/pkg/common/storage/pagination"
 	"server/v3/pkg/common/storage/model"
 	"time"
 )

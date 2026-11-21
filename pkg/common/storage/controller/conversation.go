@@ -7,11 +7,11 @@ import (
 	"server/v3/pkg/common/storage/database"
 	relationtb "server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
-	"gitee.com/matkurban/openimsdk-tools/db/tx"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/stringutil"
+	"server/v3/pkg/common/storage/pagination"
+	"server/v3/pkg/common/storage/tx"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/stringutil"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/common/storage/cache"
 )

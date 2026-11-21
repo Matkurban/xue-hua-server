@@ -6,14 +6,14 @@ import (
 	"strconv"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/encrypt"
-	"gitee.com/matkurban/openimsdk-tools/utils/timeutil"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/encrypt"
+	"server/v3/pkg/util/timeutil"
 	"server/v3/pkg/apistruct"
 	"server/v3/pkg/authverify"
 	"server/v3/pkg/common/servererrs"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

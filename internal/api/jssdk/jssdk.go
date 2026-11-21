@@ -4,14 +4,14 @@ import (
 	"context"
 	"sort"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/rpcli"
 
 	"github.com/gin-gonic/gin"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/conversation"
 	"github.com/openimsdk/protocol/jssdk"
 	"github.com/openimsdk/protocol/msg"

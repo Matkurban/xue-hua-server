@@ -7,11 +7,11 @@ import (
 	"server/v3/pkg/notification/common_user"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/mq/memamq"
+	"server/v3/pkg/common/mq/memamq"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/relation"
 	"github.com/openimsdk/protocol/sdkws"

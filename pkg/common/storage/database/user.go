@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"server/v3/pkg/common/storage/pagination"
 	"github.com/openimsdk/protocol/user"
 	"server/v3/pkg/common/storage/model"
 )

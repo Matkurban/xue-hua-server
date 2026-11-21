@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/common/servererrs"

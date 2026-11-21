@@ -3,9 +3,9 @@ package relation
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/msg"
 	"server/v3/pkg/rpcli"
 
@@ -14,7 +14,7 @@ import (
 
 	relationtb "server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/mcontext"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/relation"
 	"github.com/openimsdk/protocol/sdkws"

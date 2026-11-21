@@ -19,7 +19,7 @@ import (
 	"math/rand"
 	"strings"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"google.golang.org/grpc/resolver"
 )
 

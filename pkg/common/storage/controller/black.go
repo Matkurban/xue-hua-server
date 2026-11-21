@@ -2,9 +2,9 @@ package controller
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/storage/pagination"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	"server/v3/pkg/common/storage/cache"
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"

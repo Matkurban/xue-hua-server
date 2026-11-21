@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
+	"server/v3/pkg/common/storage/redisutil"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/database/mgo"
 	"testing"

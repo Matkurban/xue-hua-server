@@ -7,7 +7,7 @@ import (
 	"server/v3/pkg/common/storage/model"
 	"server/v3/pkg/notification/common_user"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/sdkws"
 )
 

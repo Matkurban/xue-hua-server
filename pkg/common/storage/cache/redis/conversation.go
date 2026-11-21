@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/encrypt"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/encrypt"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/cache"

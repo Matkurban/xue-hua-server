@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
-	"gitee.com/matkurban/openimsdk-tools/discovery/etcd"
-	"gitee.com/matkurban/openimsdk-tools/mq/kafka"
-	"gitee.com/matkurban/openimsdk-tools/s3/minio"
-	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"server/v3/pkg/common/storage/redisutil"
+	"server/v3/pkg/discovery/etcd"
+	"server/v3/pkg/common/mq/kafka"
+	"server/v3/pkg/common/s3/minio"
+	"server/v3/pkg/common/program"
 	"server/v3/pkg/common/config"
 )
 

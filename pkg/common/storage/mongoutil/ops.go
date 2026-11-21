@@ -3,8 +3,8 @@ package mongoutil
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/storage/pagination"
+	"server/v3/pkg/common/errs"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )

@@ -11,9 +11,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
 	pbuser "github.com/openimsdk/protocol/user"
 	"server/v3/pkg/common/storage/cache/cachekey"
 )

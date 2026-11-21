@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/util/jsonutil"
 	"github.com/openimsdk/protocol/auth"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )

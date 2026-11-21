@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	pbuser "github.com/openimsdk/protocol/user"
 	"server/v3/pkg/authverify"
 	"server/v3/pkg/common/storage/model"

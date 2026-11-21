@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"github.com/openimsdk/protocol/auth"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"

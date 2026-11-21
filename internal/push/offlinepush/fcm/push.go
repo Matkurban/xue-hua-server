@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/httputil"
+	"server/v3/pkg/util/httputil"
 	"server/v3/internal/push/offlinepush/options"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/api/option"

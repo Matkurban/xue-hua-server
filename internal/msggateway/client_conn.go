@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 )
 
 var ErrWriteFull = fmt.Errorf("websocket write buffer full,close connection")

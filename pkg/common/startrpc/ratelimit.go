@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/stability/ratelimit"
-	"gitee.com/matkurban/openimsdk-tools/stability/ratelimit/bbr"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/stability/ratelimit"
+	"server/v3/pkg/common/stability/ratelimit/bbr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

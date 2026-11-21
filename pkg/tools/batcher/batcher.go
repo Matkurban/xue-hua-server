@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/idutil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/idutil"
 	"server/v3/pkg/authverify"
 )
 

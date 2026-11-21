@@ -11,10 +11,10 @@ import (
 
 	"google.golang.org/grpc"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	pbconversation "github.com/openimsdk/protocol/conversation"
 	"github.com/openimsdk/protocol/msg"

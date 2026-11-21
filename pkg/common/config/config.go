@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
-	"gitee.com/matkurban/openimsdk-tools/mq/kafka"
-	"gitee.com/matkurban/openimsdk-tools/s3/aws"
-	"gitee.com/matkurban/openimsdk-tools/s3/cos"
-	"gitee.com/matkurban/openimsdk-tools/s3/kodo"
-	"gitee.com/matkurban/openimsdk-tools/s3/minio"
-	"gitee.com/matkurban/openimsdk-tools/s3/oss"
+	"server/v3/pkg/common/storage/redisutil"
+	"server/v3/pkg/common/mq/kafka"
+	"server/v3/pkg/common/s3/aws"
+	"server/v3/pkg/common/s3/cos"
+	"server/v3/pkg/common/s3/kodo"
+	"server/v3/pkg/common/s3/minio"
+	"server/v3/pkg/common/s3/oss"
 )
 
 const StructTagName = "yaml"

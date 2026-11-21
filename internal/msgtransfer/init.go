@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/mq"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/mq"
+	"server/v3/pkg/util/runtimeenv"
 	"server/v3/pkg/common/storage/cache"
 	"server/v3/pkg/common/storage/cache/mcache"
 	"server/v3/pkg/common/storage/cache/redis"
@@ -14,7 +14,7 @@ import (
 	"server/v3/pkg/dbbuild"
 	"server/v3/pkg/mqbuild"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"google.golang.org/grpc"
 	conf "server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/controller"

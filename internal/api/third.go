@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"gitee.com/matkurban/openimsdk-tools/a2r"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/a2r"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/mcontext"
 	"github.com/gin-gonic/gin"
 	"github.com/openimsdk/protocol/third"
 )

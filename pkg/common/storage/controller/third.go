@@ -7,7 +7,7 @@ import (
 	"server/v3/pkg/common/storage/database"
 	"server/v3/pkg/common/storage/model"
 
-	"gitee.com/matkurban/openimsdk-tools/db/pagination"
+	"server/v3/pkg/common/storage/pagination"
 	"server/v3/pkg/common/storage/cache"
 )
 

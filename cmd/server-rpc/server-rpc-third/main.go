@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"server/v3/pkg/common/program"
 	"server/v3/pkg/common/cmd"
 )
 

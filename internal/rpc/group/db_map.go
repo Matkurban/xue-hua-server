@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/mcontext"
 	pbgroup "github.com/openimsdk/protocol/group"
 	"github.com/openimsdk/protocol/sdkws"
 )

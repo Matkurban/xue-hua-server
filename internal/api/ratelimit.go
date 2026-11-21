@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/stability/ratelimit"
-	"gitee.com/matkurban/openimsdk-tools/stability/ratelimit/bbr"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/stability/ratelimit"
+	"server/v3/pkg/common/stability/ratelimit/bbr"
 )
 
 type RateLimiter struct {

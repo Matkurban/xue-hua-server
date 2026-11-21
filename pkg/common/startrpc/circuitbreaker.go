@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/stability/circuitbreaker"
-	"gitee.com/matkurban/openimsdk-tools/stability/circuitbreaker/sre"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/stability/circuitbreaker"
+	"server/v3/pkg/common/stability/circuitbreaker/sre"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

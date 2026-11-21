@@ -10,7 +10,7 @@ import (
 	"server/v3/pkg/mqbuild"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
+	"server/v3/pkg/discovery"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/conversation"
 	"github.com/openimsdk/protocol/msg"

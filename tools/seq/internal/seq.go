@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/db/redisutil"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/common/storage/redisutil"
+	"server/v3/pkg/util/runtimeenv"
 	"github.com/go-viper/mapstructure/v2"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/common/storage/database/mgo"

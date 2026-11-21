@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"gitee.com/matkurban/openimsdk-tools/mq"
-	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"
+	"server/v3/pkg/common/mq"
+	"server/v3/pkg/util/jsonutil"
 	"google.golang.org/protobuf/proto"
 
 	"strconv"
@@ -19,9 +19,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	pbmsg "github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

@@ -3,8 +3,8 @@ package msg
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/timeutil"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/timeutil"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

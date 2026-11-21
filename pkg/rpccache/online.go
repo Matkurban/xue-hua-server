@@ -14,9 +14,9 @@ import (
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/db/cacheutil"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/storage/cacheutil"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/storage/cache/cachekey"
 	"server/v3/pkg/localcache"

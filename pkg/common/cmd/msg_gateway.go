@@ -8,7 +8,7 @@ import (
 	"server/v3/pkg/common/startrpc"
 	"server/v3/version"
 
-	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"server/v3/pkg/common/program"
 	"github.com/spf13/cobra"
 )
 

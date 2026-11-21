@@ -17,9 +17,9 @@ package rpccache
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	pbconversation "github.com/openimsdk/protocol/conversation"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"

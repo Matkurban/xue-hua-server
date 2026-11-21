@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	relationtb "server/v3/pkg/common/storage/model"
 	"time"
 

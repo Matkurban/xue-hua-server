@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/runtimeenv"
 	"google.golang.org/grpc"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/dbbuild"
 	"server/v3/pkg/rpccache"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 )
 
 type Config struct {

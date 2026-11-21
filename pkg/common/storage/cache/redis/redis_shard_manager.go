@@ -3,8 +3,8 @@ package redis
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )

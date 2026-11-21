@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/constant"
 	pbchat "github.com/openimsdk/protocol/msg"
 	"server/v3/pkg/common/config"

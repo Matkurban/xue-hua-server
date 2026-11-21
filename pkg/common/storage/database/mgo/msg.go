@@ -11,9 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"server/v3/pkg/common/storage/mongoutil"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/jsonutil"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

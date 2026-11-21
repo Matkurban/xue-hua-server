@@ -9,8 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/protobuf/proto"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/util/jsonutil"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/push"
 	"github.com/openimsdk/protocol/sdkws"

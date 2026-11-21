@@ -20,7 +20,7 @@ import (
 	"server/v3/pkg/common/storage/cache/cachekey"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"github.com/redis/go-redis/v9"
 	"server/v3/pkg/common/config"
 	"server/v3/pkg/localcache"

@@ -3,7 +3,7 @@ package model
 import (
 	"context"
 	"errors"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"time"
 )

@@ -9,17 +9,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
+	"server/v3/pkg/common/apiresp"
 	"github.com/gorilla/websocket"
 	"server/v3/pkg/rpcli"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/mcontext"
 	pbAuth "github.com/openimsdk/protocol/auth"
 	"server/v3/pkg/common/webhook"
 	"server/v3/pkg/rpccache"
 
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msggateway"

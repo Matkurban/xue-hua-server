@@ -15,8 +15,8 @@ import (
 	"syscall"
 	"time"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/program"
 	"server/v3/pkg/apistruct"
 	"server/v3/pkg/common/config"
 	"github.com/openimsdk/protocol/auth"

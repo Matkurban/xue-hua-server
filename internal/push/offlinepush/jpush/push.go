@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"gitee.com/matkurban/openimsdk-tools/utils/httputil"
+	"server/v3/pkg/util/httputil"
 	"server/v3/internal/push/offlinepush/jpush/body"
 	"server/v3/internal/push/offlinepush/options"
 	"server/v3/pkg/common/config"

@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitee.com/matkurban/openimsdk-tools/a2r"
+	"server/v3/pkg/common/a2r"
 	"github.com/openimsdk/protocol/relation"
 )
 

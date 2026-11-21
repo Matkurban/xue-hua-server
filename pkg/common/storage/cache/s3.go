@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/s3"
+	"server/v3/pkg/common/s3"
 	relationtb "server/v3/pkg/common/storage/model"
 )
 

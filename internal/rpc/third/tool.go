@@ -6,8 +6,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/mcontext"
 	"github.com/openimsdk/protocol/third"
 	"server/v3/pkg/authverify"
 )

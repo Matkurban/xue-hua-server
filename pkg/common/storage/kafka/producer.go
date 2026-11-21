@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"github.com/IBM/sarama"
 	"google.golang.org/protobuf/proto"
 )

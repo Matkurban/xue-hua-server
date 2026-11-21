@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/system/program"
+	"server/v3/pkg/common/program"
 	"github.com/spf13/cobra"
 	"server/v3/internal/rpc/auth"
 	"server/v3/pkg/common/config"

@@ -11,12 +11,12 @@ import (
 
 	"server/v3/pkg/authverify"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/s3"
-	"gitee.com/matkurban/openimsdk-tools/s3/cont"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/common/s3"
+	"server/v3/pkg/common/s3/cont"
+	"server/v3/pkg/util/datautil"
 	"github.com/google/uuid"
 	"github.com/openimsdk/protocol/third"
 	"server/v3/pkg/common/servererrs"

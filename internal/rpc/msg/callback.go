@@ -5,13 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/errs"
 	"server/v3/pkg/apistruct"
 	"server/v3/pkg/common/webhook"
 
-	"gitee.com/matkurban/openimsdk-tools/mcontext"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
-	"gitee.com/matkurban/openimsdk-tools/utils/stringutil"
+	"server/v3/pkg/common/mcontext"
+	"server/v3/pkg/util/datautil"
+	"server/v3/pkg/util/stringutil"
 	"github.com/openimsdk/protocol/constant"
 	pbchat "github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

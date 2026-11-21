@@ -7,11 +7,11 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mq/memamq"
-	"gitee.com/matkurban/openimsdk-tools/utils/idutil"
-	"gitee.com/matkurban/openimsdk-tools/utils/jsonutil"
-	"gitee.com/matkurban/openimsdk-tools/utils/timeutil"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mq/memamq"
+	"server/v3/pkg/util/idutil"
+	"server/v3/pkg/util/jsonutil"
+	"server/v3/pkg/util/timeutil"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"

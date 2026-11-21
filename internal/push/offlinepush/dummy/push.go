@@ -2,7 +2,7 @@ package dummy
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/log"
 	"server/v3/internal/push/offlinepush/options"
 	"sync/atomic"
 )

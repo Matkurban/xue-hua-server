@@ -1,11 +1,11 @@
 package api
 
 import (
-	"gitee.com/matkurban/openimsdk-tools/a2r"
-	"gitee.com/matkurban/openimsdk-tools/apiresp"
-	"gitee.com/matkurban/openimsdk-tools/discovery"
-	"gitee.com/matkurban/openimsdk-tools/errs"
-	"gitee.com/matkurban/openimsdk-tools/log"
+	"server/v3/pkg/common/a2r"
+	"server/v3/pkg/common/apiresp"
+	"server/v3/pkg/discovery"
+	"server/v3/pkg/common/errs"
+	"server/v3/pkg/common/log"
 	"github.com/gin-gonic/gin"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msggateway"

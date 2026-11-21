@@ -3,8 +3,8 @@ package mongoutil
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/db/tx"
-	"gitee.com/matkurban/openimsdk-tools/errs"
+	"server/v3/pkg/common/storage/tx"
+	"server/v3/pkg/common/errs"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

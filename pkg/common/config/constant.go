@@ -14,7 +14,7 @@
 
 package config
 
-import "gitee.com/matkurban/openimsdk-tools/utils/runtimeenv"
+import "server/v3/pkg/util/runtimeenv"
 
 const ConfKey = "conf"
 

@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/mq"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/common/mq"
 	"github.com/openimsdk/protocol/push"
 	"github.com/openimsdk/protocol/sdkws"
 	"google.golang.org/protobuf/proto"

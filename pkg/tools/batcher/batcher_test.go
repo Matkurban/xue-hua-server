@@ -3,7 +3,7 @@ package batcher
 import (
 	"context"
 	"fmt"
-	"gitee.com/matkurban/openimsdk-tools/utils/stringutil"
+	"server/v3/pkg/util/stringutil"
 	"testing"
 	"time"
 )

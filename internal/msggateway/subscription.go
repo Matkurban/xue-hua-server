@@ -2,8 +2,8 @@ package msggateway
 
 import (
 	"context"
-	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/utils/datautil"
+	"server/v3/pkg/common/log"
+	"server/v3/pkg/util/datautil"
 	"github.com/openimsdk/protocol/sdkws"
 	"google.golang.org/protobuf/proto"
 	"sync"
