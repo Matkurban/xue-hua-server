@@ -5,8 +5,6 @@ import (
 
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/tokenverify"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/openimsdk/protocol/constant"
 	"server/v3/pkg/authverify"
 	"server/v3/pkg/common/config"
@@ -65,7 +63,7 @@ func (a *authDatabase) SetTokenMapByUidPid(ctx context.Context, userID string, p
 func (a *authDatabase) BatchSetTokenMapByUidPid(ctx context.Context, tokens []string) error {
 	setMap := make(map[string]map[string]any)
 	for _, token := range tokens {
-		claims, err := tokenverify.GetClaimFromToken(token, authverify.Secret(a.accessSecret))
+		claims, err := authverify.GetClaimFromToken(token, a.accessSecret)
 		if err != nil {
 			continue
 		}
@@ -118,11 +116,9 @@ func (a *authDatabase) CreateToken(ctx context.Context, userID string, platformI
 		}
 	}
 
-	claims := tokenverify.BuildClaims(userID, platformID, a.accessExpire)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(a.accessSecret))
+	tokenString, err := authverify.CreateToken(userID, platformID, a.accessExpire, a.accessSecret)
 	if err != nil {
-		return "", errs.WrapMsg(err, "token.SignedString")
+		return "", err
 	}
 
 	if err = a.cache.SetTokenFlagEx(ctx, userID, platformID, tokenString, constant.NormalToken); err != nil {
@@ -145,7 +141,7 @@ func (a *authDatabase) checkToken(_ context.Context, tokens map[int]map[string]i
 
 	for plfID, tks := range tokens {
 		for k, v := range tks {
-			_, err := tokenverify.GetClaimFromToken(k, authverify.Secret(a.accessSecret))
+			_, err := authverify.GetClaimFromToken(k, a.accessSecret)
 			if err != nil || v != constant.NormalToken {
 				deleteToken[plfID] = append(deleteToken[plfID], k)
 			} else {

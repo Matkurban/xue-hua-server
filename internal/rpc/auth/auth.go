@@ -22,7 +22,6 @@ import (
 	"gitee.com/matkurban/openimsdk-tools/discovery"
 	"gitee.com/matkurban/openimsdk-tools/errs"
 	"gitee.com/matkurban/openimsdk-tools/log"
-	"gitee.com/matkurban/openimsdk-tools/tokenverify"
 	pbauth "github.com/openimsdk/protocol/auth"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msggateway"
@@ -169,8 +168,8 @@ func (s *authServer) GetExistingToken(ctx context.Context, req *pbauth.GetExisti
 	}, nil
 }
 
-func (s *authServer) parseToken(ctx context.Context, tokensString string) (claims *tokenverify.Claims, err error) {
-	claims, err = tokenverify.GetClaimFromToken(tokensString, authverify.Secret(s.config.Share.Secret))
+func (s *authServer) parseToken(ctx context.Context, tokensString string) (claims *authverify.Claims, err error) {
+	claims, err = authverify.GetClaimFromToken(tokensString, s.config.Share.Secret)
 	if err != nil {
 		return nil, err
 	}
