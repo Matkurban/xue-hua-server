@@ -17,6 +17,7 @@ package localcache
 import (
 	"context"
 	"hash/fnv"
+	"sync"
 	"unsafe"
 
 	"server/v3/pkg/localcache/link"
@@ -33,8 +34,15 @@ type Cache[V any] interface {
 
 func LRUStringHash(key string) uint64 {
 	h := fnv.New64a()
-	h.Write(*(*[]byte)(unsafe.Pointer(&key)))
+	if len(key) > 0 {
+		h.Write(unsafe.Slice(unsafe.StringData(key), len(key)))
+	}
 	return h.Sum64()
+}
+
+type evictTask struct {
+	src  string
+	keys map[string]struct{}
 }
 
 func New[V any](opts ...Option) Cache[V] {
@@ -43,14 +51,13 @@ func New[V any](opts ...Option) Cache[V] {
 		o(opt)
 	}
 
-	c := cache[V]{opt: opt}
+	c := &cache[V]{opt: opt}
 	if opt.localSlotNum > 0 && opt.localSlotSize > 0 {
 		createSimpleLRU := func() lru.LRU[string, V] {
 			if opt.expirationEvict {
 				return lru.NewExpirationLRU[string, V](opt.localSlotSize, opt.localSuccessTTL, opt.localFailedTTL, opt.target, c.onEvict)
-			} else {
-				return lru.NewLazyLRU[string, V](opt.localSlotSize, opt.localSuccessTTL, opt.localFailedTTL, opt.target, c.onEvict)
 			}
+			return lru.NewLazyLRU[string, V](opt.localSlotSize, opt.localSuccessTTL, opt.localFailedTTL, opt.target, c.onEvict)
 		}
 		if opt.localSlotNum == 1 {
 			c.local = createSimpleLRU()
@@ -59,25 +66,67 @@ func New[V any](opts ...Option) Cache[V] {
 		}
 		if opt.linkSlotNum > 0 {
 			c.link = link.New(opt.linkSlotNum)
+			c.evictCond = sync.NewCond(&c.evictMu)
+			go c.runEvictWorker()
 		}
 	}
-	return &c
+	return c
 }
 
 type cache[V any] struct {
 	opt   *option
 	link  link.Link
 	local lru.LRU[string, V]
+
+	evictMu     sync.Mutex
+	evictCond   *sync.Cond
+	evictQueue  []evictTask
+	evictClosed bool
+	stopOnce    sync.Once
+}
+
+func (c *cache[V]) runEvictWorker() {
+	for {
+		c.evictMu.Lock()
+		for len(c.evictQueue) == 0 && !c.evictClosed {
+			c.evictCond.Wait()
+		}
+		if len(c.evictQueue) == 0 && c.evictClosed {
+			c.evictMu.Unlock()
+			return
+		}
+		batch := c.evictQueue
+		c.evictQueue = nil
+		c.evictMu.Unlock()
+
+		for _, task := range batch {
+			c.delLinked(task.src, task.keys)
+		}
+	}
 }
 
 func (c *cache[V]) onEvict(key string, value V) {
-	if c.link != nil {
-		// Do not delete other keys while the underlying LRU still holds its lock;
-		// defer linked deletions to avoid re-entering the same slot and deadlocking.
-		if lks := c.link.Del(key); len(lks) > 0 {
-			go c.delLinked(key, lks)
+	if c.link == nil {
+		return
+	}
+	// Do not delete other keys while the underlying LRU still holds its lock;
+	// enqueue linked deletions to the single background worker to avoid both
+	// re-entrant slot deadlocks and unbounded goroutine creation.
+	lks := c.link.Del(key)
+	if len(lks) == 0 {
+		return
+	}
+	if len(lks) == 1 {
+		if _, onlySelf := lks[key]; onlySelf {
+			return
 		}
 	}
+	c.evictMu.Lock()
+	if !c.evictClosed {
+		c.evictQueue = append(c.evictQueue, evictTask{src: key, keys: lks})
+		c.evictCond.Signal()
+	}
+	c.evictMu.Unlock()
 }
 
 func (c *cache[V]) delLinked(src string, keys map[string]struct{}) {
@@ -96,8 +145,8 @@ func (c *cache[V]) del(key ...string) {
 		c.local.Del(k)
 		if c.link != nil {
 			lks := c.link.Del(k)
-			for k := range lks {
-				c.local.Del(k)
+			for lk := range lks {
+				c.local.Del(lk)
 			}
 		}
 	}
@@ -115,9 +164,8 @@ func (c *cache[V]) GetLink(ctx context.Context, key string, fetch func(ctx conte
 			}
 			return fetch(ctx)
 		})
-	} else {
-		return fetch(ctx)
 	}
+	return fetch(ctx)
 }
 
 func (c *cache[V]) Del(ctx context.Context, key ...string) {
@@ -132,5 +180,15 @@ func (c *cache[V]) DelLocal(ctx context.Context, key ...string) {
 }
 
 func (c *cache[V]) Stop() {
-	c.local.Stop()
+	c.stopOnce.Do(func() {
+		if c.evictCond != nil {
+			c.evictMu.Lock()
+			c.evictClosed = true
+			c.evictCond.Broadcast()
+			c.evictMu.Unlock()
+		}
+		if c.local != nil {
+			c.local.Stop()
+		}
+	})
 }
