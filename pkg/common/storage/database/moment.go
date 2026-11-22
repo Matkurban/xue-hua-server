@@ -24,10 +24,14 @@ import (
 type Moment interface {
 	Create(ctx context.Context, moment *model.Moment) error
 	UpdateByMap(ctx context.Context, momentID, userID string, args map[string]any) error
-	Delete(ctx context.Context, momentID, userID string) error
+	Delete(ctx context.Context, momentID, userID string) (int64, error)
 	Take(ctx context.Context, momentID string) (*model.Moment, error)
 	FindPage(ctx context.Context, filter any, pagination pagination.Pagination) (int64, []*model.Moment, error)
-	IncCounts(ctx context.Context, momentID string, likeDelta, commentDelta int64) error
+	FindTimeline(ctx context.Context, filter any, beforeSeq int64, limit int64) ([]*model.Moment, error)
+	FindUpdatedSince(ctx context.Context, filter any, sinceSeq int64, limit int64) ([]*model.Moment, error)
+	NextSeq(ctx context.Context) (int64, error)
+	CurrentSeq(ctx context.Context) (int64, error)
+	IncCounts(ctx context.Context, momentID string, likeDelta, commentDelta int64) (int64, error)
 	// admin operations
 	Count(ctx context.Context, filter any) (int64, error)
 	SetStatus(ctx context.Context, momentIDs []string, status int32) (int64, error)

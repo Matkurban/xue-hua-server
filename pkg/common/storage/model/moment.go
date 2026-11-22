@@ -53,6 +53,8 @@ type Moment struct {
 	CommentCount    int64             `bson:"comment_count" json:"commentCount"`
 	VisibleType     int32             `bson:"visible_type" json:"visibleType"`
 	Status          int32             `bson:"status" json:"status"`
+	TimelineSeq     int64             `bson:"timeline_seq" json:"timelineSeq"`
+	UpdateSeq       int64             `bson:"update_seq" json:"updateSeq"`
 }
 
 type MomentComment struct {

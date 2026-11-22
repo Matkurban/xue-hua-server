@@ -229,6 +229,8 @@ func newGinRouter(ctx context.Context, client discovery.SvcDiscoveryRegistry, cf
 		momentGroup.POST("/create", momentApi.CreateMoment)
 		momentGroup.POST("/delete", momentApi.DeleteMoment)
 		momentGroup.POST("/list", momentApi.ListMoments)
+		momentGroup.POST("/timeline", momentApi.ListTimeline)
+		momentGroup.POST("/sync", momentApi.SyncMoments)
 		momentGroup.POST("/comment", momentApi.CommentMoment)
 		momentGroup.POST("/delete_comment", momentApi.DeleteComment)
 		momentGroup.POST("/like", momentApi.LikeMoment)

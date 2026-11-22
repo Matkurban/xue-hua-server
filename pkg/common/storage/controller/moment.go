@@ -31,13 +31,16 @@ import (
 
 type MomentDatabase interface {
 	CreateMoment(ctx context.Context, userID, content string, media []model.MomentMediaItem, visibleType int32, visibleGroupIDs []string, extra string) (*model.Moment, error)
-	DeleteMoment(ctx context.Context, userID, momentID string) error
+	DeleteMoment(ctx context.Context, userID, momentID string) (int64, error)
 	ListVisibleMoments(ctx context.Context, viewerUserID, ownerUserID string, pagination pagination.Pagination) (int64, []*model.Moment, error)
+	ListVisibleTimeline(ctx context.Context, viewerUserID, ownerUserID string, beforeSeq int64, limit int64) ([]*model.Moment, int64, bool, int64, error)
+	SyncVisibleMoments(ctx context.Context, viewerUserID string, lastSyncSeq int64, limit int64) ([]*model.Moment, []string, int64, bool, bool, error)
+	CurrentSyncSeq(ctx context.Context) (int64, error)
 	GetMoment(ctx context.Context, momentID string) (*model.Moment, error)
-	LikeMoment(ctx context.Context, userID, momentID string) error
-	UnlikeMoment(ctx context.Context, userID, momentID string) error
-	CommentMoment(ctx context.Context, userID, momentID, replyToUserID, content string) (*model.MomentComment, error)
-	DeleteComment(ctx context.Context, userID, commentID string) (*model.MomentComment, error)
+	LikeMoment(ctx context.Context, userID, momentID string) (int64, error)
+	UnlikeMoment(ctx context.Context, userID, momentID string) (int64, error)
+	CommentMoment(ctx context.Context, userID, momentID, replyToUserID, content string) (*model.MomentComment, int64, error)
+	DeleteComment(ctx context.Context, userID, commentID string) (*model.MomentComment, int64, error)
 	ListComments(ctx context.Context, momentID string, pagination pagination.Pagination) (int64, []*model.MomentComment, error)
 	ListLikes(ctx context.Context, momentID string, pagination pagination.Pagination) (int64, []*model.MomentLike, error)
 	ResolveVisibleUserIDs(ctx context.Context, moment *model.Moment) ([]string, error)
@@ -100,9 +103,9 @@ func (m *momentDatabase) CreateMoment(ctx context.Context, userID, content strin
 	return moment, nil
 }
 
-func (m *momentDatabase) DeleteMoment(ctx context.Context, userID, momentID string) error {
+func (m *momentDatabase) DeleteMoment(ctx context.Context, userID, momentID string) (int64, error) {
 	if userID == "" || momentID == "" {
-		return errs.ErrArgs.WrapMsg("userID/momentID is empty")
+		return 0, errs.ErrArgs.WrapMsg("userID/momentID is empty")
 	}
 	return m.moment.Delete(ctx, momentID, userID)
 }
@@ -114,34 +117,34 @@ func (m *momentDatabase) GetMoment(ctx context.Context, momentID string) (*model
 	return m.moment.Take(ctx, momentID)
 }
 
-func (m *momentDatabase) LikeMoment(ctx context.Context, userID, momentID string) error {
+func (m *momentDatabase) LikeMoment(ctx context.Context, userID, momentID string) (int64, error) {
 	if userID == "" || momentID == "" {
-		return errs.ErrArgs.WrapMsg("userID/momentID is empty")
+		return 0, errs.ErrArgs.WrapMsg("userID/momentID is empty")
 	}
 	if _, err := m.like.Take(ctx, momentID, userID); err == nil {
-		return errs.ErrArgs.WrapMsg("already liked")
+		return 0, errs.ErrArgs.WrapMsg("already liked")
 	} else if !mgo.IsNotFound(err) {
-		return err
+		return 0, err
 	}
 	if err := m.like.Create(ctx, &model.MomentLike{MomentID: momentID, UserID: userID, CreateTime: time.Now()}); err != nil {
-		return err
+		return 0, err
 	}
 	return m.moment.IncCounts(ctx, momentID, 1, 0)
 }
 
-func (m *momentDatabase) UnlikeMoment(ctx context.Context, userID, momentID string) error {
+func (m *momentDatabase) UnlikeMoment(ctx context.Context, userID, momentID string) (int64, error) {
 	if userID == "" || momentID == "" {
-		return errs.ErrArgs.WrapMsg("userID/momentID is empty")
+		return 0, errs.ErrArgs.WrapMsg("userID/momentID is empty")
 	}
 	if err := m.like.Delete(ctx, momentID, userID); err != nil {
-		return err
+		return 0, err
 	}
 	return m.moment.IncCounts(ctx, momentID, -1, 0)
 }
 
-func (m *momentDatabase) CommentMoment(ctx context.Context, userID, momentID, replyToUserID, content string) (*model.MomentComment, error) {
+func (m *momentDatabase) CommentMoment(ctx context.Context, userID, momentID, replyToUserID, content string) (*model.MomentComment, int64, error) {
 	if userID == "" || momentID == "" || content == "" {
-		return nil, errs.ErrArgs.WrapMsg("userID/momentID/content is empty")
+		return nil, 0, errs.ErrArgs.WrapMsg("userID/momentID/content is empty")
 	}
 	comment := &model.MomentComment{
 		CommentID:     idutil.OperationIDGenerator(),
@@ -154,32 +157,34 @@ func (m *momentDatabase) CommentMoment(ctx context.Context, userID, momentID, re
 		UpdateTime:    time.Now(),
 	}
 	if err := m.comment.Create(ctx, comment); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	if err := m.moment.IncCounts(ctx, momentID, 0, 1); err != nil {
-		return nil, err
+	seq, err := m.moment.IncCounts(ctx, momentID, 0, 1)
+	if err != nil {
+		return nil, 0, err
 	}
-	return comment, nil
+	return comment, seq, nil
 }
 
-func (m *momentDatabase) DeleteComment(ctx context.Context, userID, commentID string) (*model.MomentComment, error) {
+func (m *momentDatabase) DeleteComment(ctx context.Context, userID, commentID string) (*model.MomentComment, int64, error) {
 	if userID == "" || commentID == "" {
-		return nil, errs.ErrArgs.WrapMsg("userID/commentID is empty")
+		return nil, 0, errs.ErrArgs.WrapMsg("userID/commentID is empty")
 	}
 	comment, err := m.comment.Take(ctx, commentID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if comment.UserID != userID {
-		return nil, errs.ErrArgs.WrapMsg("no permission to delete comment")
+		return nil, 0, errs.ErrArgs.WrapMsg("no permission to delete comment")
 	}
 	if err := m.comment.Delete(ctx, commentID, userID); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	if err := m.moment.IncCounts(ctx, comment.MomentID, 0, -1); err != nil {
-		return nil, err
+	seq, err := m.moment.IncCounts(ctx, comment.MomentID, 0, -1)
+	if err != nil {
+		return nil, 0, err
 	}
-	return comment, nil
+	return comment, seq, nil
 }
 
 func (m *momentDatabase) ListComments(ctx context.Context, momentID string, pagination pagination.Pagination) (int64, []*model.MomentComment, error) {
@@ -305,6 +310,211 @@ func (m *momentDatabase) ListVisibleMoments(ctx context.Context, viewerUserID, o
 	return m.moment.FindPage(ctx, filter, pagination)
 }
 
+func (m *momentDatabase) CurrentSyncSeq(ctx context.Context) (int64, error) {
+	return m.moment.CurrentSeq(ctx)
+}
+
+func (m *momentDatabase) buildVisibleFilter(ctx context.Context, viewerUserID, ownerUserID string) (bson.M, bool, error) {
+	filter := bson.M{"status": bson.M{"$nin": []int32{model.MomentStatusDeleted, model.MomentStatusBanned}}}
+	if ownerUserID != "" {
+		filter["user_id"] = ownerUserID
+		if ownerUserID == viewerUserID {
+			return filter, true, nil
+		}
+		friendIDs, err := m.friend.FindFriendUserIDs(ctx, viewerUserID)
+		if err != nil {
+			return nil, false, err
+		}
+		orFilters := make([]bson.M, 0, 2)
+		if datautil.Contain(ownerUserID, friendIDs...) {
+			orFilters = append(orFilters, bson.M{"visible_type": int32(model.MomentVisibleFriends)})
+		}
+		tagIDs, err := m.friendTag.FindTagIDsByFriend(ctx, ownerUserID, viewerUserID)
+		if err != nil {
+			return nil, false, err
+		}
+		if len(tagIDs) > 0 {
+			orFilters = append(orFilters, bson.M{"visible_type": int32(model.MomentVisibleGroups), "visible_group_ids": bson.M{"$in": tagIDs}})
+		}
+		if len(orFilters) == 0 {
+			return nil, false, nil
+		}
+		filter["$or"] = orFilters
+		return filter, true, nil
+	}
+
+	friendIDs, err := m.friend.FindFriendUserIDs(ctx, viewerUserID)
+	if err != nil {
+		return nil, false, err
+	}
+	friendIDs = datautil.Distinct(append(friendIDs, viewerUserID))
+
+	groupMembers, err := m.friendTag.FindMembersByFriend(ctx, viewerUserID)
+	if err != nil {
+		return nil, false, err
+	}
+	ownerTagMap := make(map[string][]string)
+	for _, member := range groupMembers {
+		ownerTagMap[member.OwnerUserID] = append(ownerTagMap[member.OwnerUserID], member.TagID)
+	}
+	groupFilters := make([]bson.M, 0, len(ownerTagMap))
+	for owner, tagIDs := range ownerTagMap {
+		groupFilters = append(groupFilters, bson.M{"user_id": owner, "visible_group_ids": bson.M{"$in": tagIDs}})
+	}
+
+	orFilters := []bson.M{
+		{"user_id": viewerUserID},
+		{"visible_type": int32(model.MomentVisibleFriends), "user_id": bson.M{"$in": friendIDs}},
+	}
+	if len(groupFilters) > 0 {
+		orFilters = append(orFilters, bson.M{"visible_type": int32(model.MomentVisibleGroups), "$or": groupFilters})
+	}
+	filter["$or"] = orFilters
+	return filter, true, nil
+}
+
+func (m *momentDatabase) ListVisibleTimeline(ctx context.Context, viewerUserID, ownerUserID string, beforeSeq int64, limit int64) ([]*model.Moment, int64, bool, int64, error) {
+	if viewerUserID == "" {
+		return nil, 0, false, 0, errs.ErrArgs.WrapMsg("viewerUserID is empty")
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	latestSeq, err := m.moment.CurrentSeq(ctx)
+	if err != nil {
+		return nil, 0, false, 0, err
+	}
+	filter, visible, err := m.buildVisibleFilter(ctx, viewerUserID, ownerUserID)
+	if err != nil {
+		return nil, 0, false, 0, err
+	}
+	if !visible {
+		return []*model.Moment{}, 0, false, latestSeq, nil
+	}
+	rows, err := m.moment.FindTimeline(ctx, filter, beforeSeq, limit+1)
+	if err != nil {
+		return nil, 0, false, 0, err
+	}
+	hasMore := int64(len(rows)) > limit
+	if hasMore {
+		rows = rows[:limit]
+	}
+	var nextBeforeSeq int64
+	if len(rows) > 0 {
+		nextBeforeSeq = rows[len(rows)-1].TimelineSeq
+	}
+	return rows, nextBeforeSeq, hasMore, latestSeq, nil
+}
+
+func (m *momentDatabase) SyncVisibleMoments(ctx context.Context, viewerUserID string, lastSyncSeq int64, limit int64) ([]*model.Moment, []string, int64, bool, bool, error) {
+	if viewerUserID == "" {
+		return nil, nil, 0, false, false, errs.ErrArgs.WrapMsg("viewerUserID is empty")
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 200 {
+		limit = 200
+	}
+	latestSeq, err := m.moment.CurrentSeq(ctx)
+	if err != nil {
+		return nil, nil, 0, false, false, err
+	}
+	if lastSyncSeq <= 0 {
+		moments, _, timelineHasMore, curSeq, err := m.ListVisibleTimeline(ctx, viewerUserID, "", 0, limit)
+		if err != nil {
+			return nil, nil, 0, false, false, err
+		}
+		return moments, []string{}, curSeq, true, timelineHasMore, nil
+	}
+	if lastSyncSeq >= latestSeq {
+		return []*model.Moment{}, []string{}, latestSeq, false, false, nil
+	}
+
+	friendIDs, err := m.friend.FindFriendUserIDs(ctx, viewerUserID)
+	if err != nil {
+		return nil, nil, 0, false, false, err
+	}
+	friendSet := make(map[string]struct{}, len(friendIDs)+1)
+	for _, id := range friendIDs {
+		friendSet[id] = struct{}{}
+	}
+
+	groupMembers, err := m.friendTag.FindMembersByFriend(ctx, viewerUserID)
+	if err != nil {
+		return nil, nil, 0, false, false, err
+	}
+	ownerTagSet := make(map[string]map[string]struct{})
+	for _, member := range groupMembers {
+		if ownerTagSet[member.OwnerUserID] == nil {
+			ownerTagSet[member.OwnerUserID] = make(map[string]struct{})
+		}
+		ownerTagSet[member.OwnerUserID][member.TagID] = struct{}{}
+	}
+
+	candidateAuthors := make([]string, 0, len(friendSet)+len(ownerTagSet)+1)
+	candidateAuthorSet := make(map[string]struct{}, len(friendSet)+len(ownerTagSet)+1)
+	addAuthor := func(id string) {
+		if _, ok := candidateAuthorSet[id]; !ok {
+			candidateAuthorSet[id] = struct{}{}
+			candidateAuthors = append(candidateAuthors, id)
+		}
+	}
+	addAuthor(viewerUserID)
+	for id := range friendSet {
+		addAuthor(id)
+	}
+	for id := range ownerTagSet {
+		addAuthor(id)
+	}
+
+	rows, err := m.moment.FindUpdatedSince(ctx, bson.M{"user_id": bson.M{"$in": candidateAuthors}}, lastSyncSeq, limit+1)
+	if err != nil {
+		return nil, nil, 0, false, false, err
+	}
+	hasMore := int64(len(rows)) > limit
+	if hasMore {
+		rows = rows[:limit]
+	}
+	pageLatestSeq := latestSeq
+	if hasMore && len(rows) > 0 {
+		pageLatestSeq = rows[len(rows)-1].UpdateSeq
+	}
+
+	upserts := make([]*model.Moment, 0, len(rows))
+	deletedIDs := make([]string, 0)
+	for _, row := range rows {
+		if row.Status == model.MomentStatusDeleted || row.Status == model.MomentStatusBanned {
+			deletedIDs = append(deletedIDs, row.MomentID)
+			continue
+		}
+		visible := false
+		if row.UserID == viewerUserID {
+			visible = true
+		} else if row.VisibleType == int32(model.MomentVisibleFriends) {
+			_, visible = friendSet[row.UserID]
+		} else if row.VisibleType == int32(model.MomentVisibleGroups) {
+			if tags, ok := ownerTagSet[row.UserID]; ok {
+				for _, gid := range row.VisibleGroupIDs {
+					if _, match := tags[gid]; match {
+						visible = true
+						break
+					}
+				}
+			}
+		}
+		if visible {
+			upserts = append(upserts, row)
+		} else {
+			deletedIDs = append(deletedIDs, row.MomentID)
+		}
+	}
+	return upserts, deletedIDs, pageLatestSeq, false, hasMore, nil
+}
+
 // AdminMomentFilter is the filter of the admin moment list. Zero values mean "no filter".
 type AdminMomentFilter struct {
 	UserID    string
@@ -414,7 +624,7 @@ func (m *momentDatabase) AdminDeleteComment(ctx context.Context, commentID strin
 		return nil, err
 	}
 	if changed {
-		if err := m.moment.IncCounts(ctx, comment.MomentID, 0, -1); err != nil && !mgo.IsNotFound(err) {
+		if _, err := m.moment.IncCounts(ctx, comment.MomentID, 0, -1); err != nil && !mgo.IsNotFound(err) {
 			return nil, err
 		}
 	}

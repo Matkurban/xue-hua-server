@@ -16,6 +16,7 @@ package api
 
 import (
 	"strings"
+	"time"
 
 	"server/v3/pkg/common/apiresp"
 	"server/v3/pkg/common/errs"
@@ -55,7 +56,9 @@ type CreateMomentReq struct {
 }
 
 type CreateMomentResp struct {
-	Moment *model.MomentWithInteractions `json:"moment"`
+	Moment         *model.MomentWithInteractions `json:"moment"`
+	SyncSeq        int64                         `json:"syncSeq,omitempty"`
+	VisibleUserIDs []string                      `json:"visibleUserIDs,omitempty"`
 }
 
 func (m *MomentApi) CreateMoment(c *gin.Context) {
@@ -82,12 +85,17 @@ func (m *MomentApi) CreateMoment(c *gin.Context) {
 		return
 	}
 	userInfo := m.fetchMomentUserInfo(c, req.UserID)
-	apiresp.GinSuccess(c, &CreateMomentResp{Moment: &model.MomentWithInteractions{
-		Moment:   moment,
-		UserInfo: userInfo,
-		Likes:    []*model.MomentLikeWithUser{},
-		Comments: []*model.MomentCommentWithUser{},
-	}})
+	visibleUserIDs, _ := m.momentDB.ResolveVisibleUserIDs(c, moment)
+	apiresp.GinSuccess(c, &CreateMomentResp{
+		Moment: &model.MomentWithInteractions{
+			Moment:   moment,
+			UserInfo: userInfo,
+			Likes:    []*model.MomentLikeWithUser{},
+			Comments: []*model.MomentCommentWithUser{},
+		},
+		SyncSeq:        moment.UpdateSeq,
+		VisibleUserIDs: visibleUserIDs,
+	})
 }
 
 func validateMomentMedia(media []model.MomentMediaItem) error {
@@ -128,6 +136,12 @@ type DeleteMomentReq struct {
 	MomentID string `json:"momentID" binding:"required"`
 }
 
+type MomentMutationResp struct {
+	SyncSeq        int64                     `json:"syncSeq,omitempty"`
+	VisibleUserIDs []string                  `json:"visibleUserIDs,omitempty"`
+	Like           *model.MomentLikeWithUser `json:"like,omitempty"`
+}
+
 func (m *MomentApi) DeleteMoment(c *gin.Context) {
 	var req DeleteMomentReq
 	if err := c.BindJSON(&req); err != nil {
@@ -138,11 +152,19 @@ func (m *MomentApi) DeleteMoment(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
-	if err := m.momentDB.DeleteMoment(c, req.UserID, req.MomentID); err != nil {
+	var visibleUserIDs []string
+	if existing, err := m.momentDB.GetMoment(c, req.MomentID); err == nil && existing != nil {
+		visibleUserIDs, _ = m.momentDB.ResolveVisibleUserIDs(c, existing)
+	}
+	syncSeq, err := m.momentDB.DeleteMoment(c, req.UserID, req.MomentID)
+	if err != nil {
 		apiresp.GinError(c, err)
 		return
 	}
-	apiresp.GinSuccess(c, nil)
+	apiresp.GinSuccess(c, &MomentMutationResp{
+		SyncSeq:        syncSeq,
+		VisibleUserIDs: visibleUserIDs,
+	})
 }
 
 type ListMomentsReq struct {
@@ -171,30 +193,121 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
-	if len(moments) == 0 {
-		apiresp.GinSuccess(c, &ListMomentsResp{Total: total, Moments: []*model.MomentWithInteractions{}})
+	result, err := m.enrichMoments(c, moments)
+	if err != nil {
+		apiresp.GinError(c, err)
 		return
 	}
+	apiresp.GinSuccess(c, &ListMomentsResp{Total: total, Moments: result})
+}
 
-	// Collect moment IDs
+type ListTimelineReq struct {
+	UserID      string `json:"userID" binding:"required"`
+	OwnerUserID string `json:"ownerUserID"`
+	BeforeSeq   int64  `json:"beforeSeq"`
+	Limit       int64  `json:"limit"`
+}
+
+type ListTimelineResp struct {
+	Moments       []*model.MomentWithInteractions `json:"moments"`
+	NextBeforeSeq int64                           `json:"nextBeforeSeq"`
+	HasMore       bool                            `json:"hasMore"`
+	LatestSyncSeq int64                           `json:"latestSyncSeq"`
+}
+
+func (m *MomentApi) ListTimeline(c *gin.Context) {
+	var req ListTimelineReq
+	if err := c.BindJSON(&req); err != nil {
+		apiresp.GinError(c, errs.ErrArgs.WithDetail(err.Error()).Wrap())
+		return
+	}
+	if err := authverify.CheckAccess(c, req.UserID); err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	moments, nextBeforeSeq, hasMore, latestSyncSeq, err := m.momentDB.ListVisibleTimeline(c, req.UserID, req.OwnerUserID, req.BeforeSeq, req.Limit)
+	if err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	result, err := m.enrichMoments(c, moments)
+	if err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	apiresp.GinSuccess(c, &ListTimelineResp{
+		Moments:       result,
+		NextBeforeSeq: nextBeforeSeq,
+		HasMore:       hasMore,
+		LatestSyncSeq: latestSyncSeq,
+	})
+}
+
+type SyncMomentsReq struct {
+	UserID      string `json:"userID" binding:"required"`
+	LastSyncSeq int64  `json:"lastSyncSeq"`
+	Limit       int64  `json:"limit"`
+}
+
+type SyncMomentsResp struct {
+	LatestSyncSeq    int64                           `json:"latestSyncSeq"`
+	NeedFullRefresh  bool                            `json:"needFullRefresh"`
+	HasMore          bool                            `json:"hasMore"`
+	Upserts          []*model.MomentWithInteractions `json:"upserts"`
+	DeletedMomentIDs []string                        `json:"deletedMomentIDs"`
+}
+
+func (m *MomentApi) SyncMoments(c *gin.Context) {
+	var req SyncMomentsReq
+	if err := c.BindJSON(&req); err != nil {
+		apiresp.GinError(c, errs.ErrArgs.WithDetail(err.Error()).Wrap())
+		return
+	}
+	if err := authverify.CheckAccess(c, req.UserID); err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	upserts, deletedIDs, latestSyncSeq, needFullRefresh, hasMore, err := m.momentDB.SyncVisibleMoments(c, req.UserID, req.LastSyncSeq, req.Limit)
+	if err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	enriched, err := m.enrichMoments(c, upserts)
+	if err != nil {
+		apiresp.GinError(c, err)
+		return
+	}
+	if deletedIDs == nil {
+		deletedIDs = []string{}
+	}
+	apiresp.GinSuccess(c, &SyncMomentsResp{
+		LatestSyncSeq:    latestSyncSeq,
+		NeedFullRefresh:  needFullRefresh,
+		HasMore:          hasMore,
+		Upserts:          enriched,
+		DeletedMomentIDs: deletedIDs,
+	})
+}
+
+func (m *MomentApi) enrichMoments(c *gin.Context, moments []*model.Moment) ([]*model.MomentWithInteractions, error) {
+	if len(moments) == 0 {
+		return []*model.MomentWithInteractions{}, nil
+	}
+
 	momentIDs := make([]string, len(moments))
 	for i, moment := range moments {
 		momentIDs[i] = moment.MomentID
 	}
 
-	// Fetch comments and likes for all moments
 	comments, err := m.momentDB.FindCommentsByMoments(c, momentIDs)
 	if err != nil {
-		apiresp.GinError(c, err)
-		return
+		return nil, err
 	}
 	likes, err := m.momentDB.FindLikesByMoments(c, momentIDs)
 	if err != nil {
-		apiresp.GinError(c, err)
-		return
+		return nil, err
 	}
 
-	// Collect all user IDs for fetching user info
 	userIDSet := make(map[string]struct{})
 	for _, moment := range moments {
 		userIDSet[moment.UserID] = struct{}{}
@@ -214,7 +327,6 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		userIDs = append(userIDs, userID)
 	}
 
-	// Fetch user info
 	userInfoMap := make(map[string]*model.MomentUserInfo)
 	if len(userIDs) > 0 && m.userClient != nil {
 		users, err := m.userClient.GetUsersInfo(c, userIDs)
@@ -229,7 +341,6 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		}
 	}
 
-	// Build comments map by moment ID
 	commentsByMoment := make(map[string][]*model.MomentCommentWithUser)
 	for _, comment := range comments {
 		commentWithUser := &model.MomentCommentWithUser{
@@ -249,7 +360,6 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		commentsByMoment[comment.MomentID] = append(commentsByMoment[comment.MomentID], commentWithUser)
 	}
 
-	// Build likes map by moment ID
 	likesByMoment := make(map[string][]*model.MomentLikeWithUser)
 	for _, like := range likes {
 		likeWithUser := &model.MomentLikeWithUser{
@@ -261,7 +371,6 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 		likesByMoment[like.MomentID] = append(likesByMoment[like.MomentID], likeWithUser)
 	}
 
-	// Build response
 	result := make([]*model.MomentWithInteractions, len(moments))
 	for i, moment := range moments {
 		result[i] = &model.MomentWithInteractions{
@@ -277,8 +386,7 @@ func (m *MomentApi) ListMoments(c *gin.Context) {
 			result[i].Comments = []*model.MomentCommentWithUser{}
 		}
 	}
-
-	apiresp.GinSuccess(c, &ListMomentsResp{Total: total, Moments: result})
+	return result, nil
 }
 
 type CommentMomentReq struct {
@@ -289,7 +397,9 @@ type CommentMomentReq struct {
 }
 
 type CommentMomentResp struct {
-	Comment *model.MomentComment `json:"comment"`
+	Comment        *model.MomentCommentWithUser `json:"comment"`
+	SyncSeq        int64                        `json:"syncSeq,omitempty"`
+	VisibleUserIDs []string                     `json:"visibleUserIDs,omitempty"`
 }
 
 func (m *MomentApi) CommentMoment(c *gin.Context) {
@@ -306,17 +416,45 @@ func (m *MomentApi) CommentMoment(c *gin.Context) {
 		apiresp.GinError(c, errs.ErrArgs.WithDetail("content is empty").Wrap())
 		return
 	}
-	comment, err := m.momentDB.CommentMoment(c, req.UserID, req.MomentID, req.ReplyToUserID, req.Content)
+	comment, syncSeq, err := m.momentDB.CommentMoment(c, req.UserID, req.MomentID, req.ReplyToUserID, req.Content)
 	if err != nil {
 		apiresp.GinError(c, err)
 		return
 	}
-	apiresp.GinSuccess(c, &CommentMomentResp{Comment: comment})
+	commentWithUser := &model.MomentCommentWithUser{
+		CommentID:     comment.CommentID,
+		MomentID:      comment.MomentID,
+		UserID:        comment.UserID,
+		ReplyToUserID: comment.ReplyToUserID,
+		Content:       comment.Content,
+		Status:        comment.Status,
+		CreateTime:    comment.CreateTime,
+		UpdateTime:    comment.UpdateTime,
+		UserInfo:      m.fetchMomentUserInfo(c, comment.UserID),
+	}
+	if comment.ReplyToUserID != "" {
+		commentWithUser.ReplyToUser = m.fetchMomentUserInfo(c, comment.ReplyToUserID)
+	}
+	var visibleUserIDs []string
+	if existing, err := m.momentDB.GetMoment(c, req.MomentID); err == nil && existing != nil {
+		visibleUserIDs, _ = m.momentDB.ResolveVisibleUserIDs(c, existing)
+	}
+	apiresp.GinSuccess(c, &CommentMomentResp{
+		Comment:        commentWithUser,
+		SyncSeq:        syncSeq,
+		VisibleUserIDs: visibleUserIDs,
+	})
 }
 
 type DeleteCommentReq struct {
 	UserID    string `json:"userID" binding:"required"`
 	CommentID string `json:"commentID" binding:"required"`
+}
+
+type DeleteCommentResp struct {
+	MomentID       string   `json:"momentID,omitempty"`
+	SyncSeq        int64    `json:"syncSeq,omitempty"`
+	VisibleUserIDs []string `json:"visibleUserIDs,omitempty"`
 }
 
 func (m *MomentApi) DeleteComment(c *gin.Context) {
@@ -329,12 +467,24 @@ func (m *MomentApi) DeleteComment(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
-	_, err := m.momentDB.DeleteComment(c, req.UserID, req.CommentID)
+	comment, syncSeq, err := m.momentDB.DeleteComment(c, req.UserID, req.CommentID)
 	if err != nil {
 		apiresp.GinError(c, err)
 		return
 	}
-	apiresp.GinSuccess(c, nil)
+	var visibleUserIDs []string
+	var momentID string
+	if comment != nil {
+		momentID = comment.MomentID
+		if existing, err := m.momentDB.GetMoment(c, comment.MomentID); err == nil && existing != nil {
+			visibleUserIDs, _ = m.momentDB.ResolveVisibleUserIDs(c, existing)
+		}
+	}
+	apiresp.GinSuccess(c, &DeleteCommentResp{
+		MomentID:       momentID,
+		SyncSeq:        syncSeq,
+		VisibleUserIDs: visibleUserIDs,
+	})
 }
 
 type LikeMomentReq struct {
@@ -352,11 +502,25 @@ func (m *MomentApi) LikeMoment(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
-	if err := m.momentDB.LikeMoment(c, req.UserID, req.MomentID); err != nil {
+	syncSeq, err := m.momentDB.LikeMoment(c, req.UserID, req.MomentID)
+	if err != nil {
 		apiresp.GinError(c, err)
 		return
 	}
-	apiresp.GinSuccess(c, nil)
+	var visibleUserIDs []string
+	if existing, err := m.momentDB.GetMoment(c, req.MomentID); err == nil && existing != nil {
+		visibleUserIDs, _ = m.momentDB.ResolveVisibleUserIDs(c, existing)
+	}
+	apiresp.GinSuccess(c, &MomentMutationResp{
+		SyncSeq:        syncSeq,
+		VisibleUserIDs: visibleUserIDs,
+		Like: &model.MomentLikeWithUser{
+			MomentID:   req.MomentID,
+			UserID:     req.UserID,
+			CreateTime: time.Now(),
+			UserInfo:   m.fetchMomentUserInfo(c, req.UserID),
+		},
+	})
 }
 
 type UnlikeMomentReq struct {
@@ -374,11 +538,19 @@ func (m *MomentApi) UnlikeMoment(c *gin.Context) {
 		apiresp.GinError(c, err)
 		return
 	}
-	if err := m.momentDB.UnlikeMoment(c, req.UserID, req.MomentID); err != nil {
+	syncSeq, err := m.momentDB.UnlikeMoment(c, req.UserID, req.MomentID)
+	if err != nil {
 		apiresp.GinError(c, err)
 		return
 	}
-	apiresp.GinSuccess(c, nil)
+	var visibleUserIDs []string
+	if existing, err := m.momentDB.GetMoment(c, req.MomentID); err == nil && existing != nil {
+		visibleUserIDs, _ = m.momentDB.ResolveVisibleUserIDs(c, existing)
+	}
+	apiresp.GinSuccess(c, &MomentMutationResp{
+		SyncSeq:        syncSeq,
+		VisibleUserIDs: visibleUserIDs,
+	})
 }
 
 func (m *MomentApi) fetchMomentUserInfo(c *gin.Context, userID string) *model.MomentUserInfo {
